@@ -58,20 +58,20 @@ body {
   }
 }
 .page-enter {
-  animation: page-fade 0.25s ease both;
+  animation: page-fade 0.3s ease-out both;
 }
 
-/* 클릭 지점에서 원형으로 화면을 덮는 전환 */
-@keyframes cover-grow {
+/* 화면을 살며시 덮는 베일 전환 */
+@keyframes cover-veil {
   from {
-    clip-path: circle(0px at var(--cx) var(--cy));
+    opacity: 0;
   }
   to {
-    clip-path: circle(150% at var(--cx) var(--cy));
+    opacity: 1;
   }
 }
 .cover-expand {
-  animation: cover-grow 0.35s ease-in both;
+  animation: cover-veil 0.32s ease-out both;
 }
 
 /* 매트릭스 그리드 배경 */

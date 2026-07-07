@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getUnit } from "../api/client";
@@ -43,7 +43,7 @@ function InfoRow({ k, v }: { k: string; v: ReactNode }) {
   );
 }
 
-// 운영기간 라인: 업종 색 세그먼트 + 연도 축
+// 운영 타임라인: 업종 명암 세그먼트 + 파스텔 하단선 + 포인터 추적 툴팁 + 연도 축
 function TimelineBar({
   timeline,
   colors,
@@ -58,50 +58,95 @@ function TimelineBar({
   const { segments } = buildSegments(timeline, TODAY);
   const ticks = yearTicks(timeline, TODAY);
   const thin = ticks.length > 10;
+  const [hover, setHover] = useState<{ x: number; idx: number } | null>(null);
+
+  // 포인터 위치(%) → 해당 세그먼트 인덱스
+  const handleMove = (e: ReactMouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    let acc = 0;
+    let idx = -1;
+    for (const s of segments) {
+      acc += s.widthPct;
+      if (pct <= acc) {
+        idx = s.kind === "tenancy" ? s.idx : -1;
+        break;
+      }
+    }
+    setHover({ x: e.clientX - rect.left, idx });
+  };
+
+  const hoverT = hover && hover.idx >= 0 ? timeline[hover.idx] : null;
 
   return (
     <div>
-      <div className="flex h-20 w-full overflow-hidden rounded-xl border border-line">
-        {segments.map((s, i) =>
-          s.kind === "vacancy" ? (
-            <div
-              key={i}
-              style={{ width: `${s.widthPct}%` }}
-              className="hatch flex items-center justify-center border-l border-white text-[11px] font-semibold text-slate-400"
-            >
-              {s.widthPct > 6 && "공실"}
-            </div>
-          ) : (
-            <button
-              key={i}
-              onClick={() => onSelect(s.idx)}
-              title={`${timeline[s.idx].businessName} · ${timeline[s.idx].category}`}
-              style={{
-                width: `${s.widthPct}%`,
-                backgroundColor: colors[timeline[s.idx].category],
-              }}
-              className={`relative flex flex-col items-center justify-center overflow-hidden border-l border-white/70 px-1 text-white transition ${
-                s.idx === selected
-                  ? "z-10 ring-2 ring-inset ring-navy"
-                  : "opacity-85 hover:opacity-100"
-              }`}
-            >
-              {s.widthPct > 8 && (
-                <>
-                  <span className="w-full truncate text-center text-xs font-bold">
-                    {timeline[s.idx].businessName}
-                  </span>
-                  <span className="text-[10px] text-white/80">
-                    {timeline[s.idx].survivalMonths ?? "-"}개월
-                  </span>
-                </>
-              )}
-              {s.ongoing && (
-                <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-white" />
-              )}
-            </button>
-          )
+      <div
+        className="relative"
+        onMouseMove={handleMove}
+        onMouseLeave={() => setHover(null)}
+      >
+        {/* 포인터를 따라 흐르는 툴팁 */}
+        {hover && (
+          <div
+            className="pointer-events-none absolute -top-9 z-20 -translate-x-1/2 whitespace-nowrap rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-[left] duration-100 ease-out"
+            style={{ left: hover.x }}
+          >
+            {hoverT
+              ? `${hoverT.businessName} · ${hoverT.category} · ${hoverT.survivalMonths ?? "-"}개월`
+              : "공실"}
+          </div>
         )}
+
+        <div className="flex h-20 w-full overflow-hidden rounded-xl border border-line shadow-[0_2px_12px_rgba(13,27,42,0.08)]">
+          {segments.map((s, i) =>
+            s.kind === "vacancy" ? (
+              <div
+                key={i}
+                style={{ width: `${s.widthPct}%` }}
+                className="hatch flex items-center justify-center border-l border-white text-[11px] font-semibold text-slate-400"
+              >
+                {s.widthPct > 6 && "공실"}
+              </div>
+            ) : (
+              <button
+                key={i}
+                onClick={() => onSelect(s.idx)}
+                title={`${timeline[s.idx].businessName} · ${timeline[s.idx].category}`}
+                style={{
+                  width: `${s.widthPct}%`,
+                  backgroundColor: colors[timeline[s.idx].category],
+                }}
+                className={`relative flex flex-col items-center justify-center overflow-hidden border-l border-white/70 px-1 text-white transition-[opacity,filter] duration-150 ${
+                  s.idx === selected
+                    ? "brightness-110"
+                    : "opacity-90 hover:opacity-100 hover:brightness-110"
+                }`}
+              >
+                {s.widthPct > 8 && (
+                  <>
+                    <span className="w-full truncate text-center text-xs font-bold">
+                      {timeline[s.idx].businessName}
+                    </span>
+                    <span className="text-[10px] text-white/80">
+                      {timeline[s.idx].survivalMonths ?? "-"}개월
+                    </span>
+                  </>
+                )}
+                {s.ongoing && (
+                  <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-white" />
+                )}
+                {/* 흰색→업종 파스텔 그라데이션 하단선 */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px]"
+                  style={{
+                    background: `linear-gradient(90deg, rgba(255,255,255,0.9), color-mix(in srgb, ${colors[timeline[s.idx].category]} 55%, white))`,
+                  }}
+                />
+              </button>
+            )
+          )}
+        </div>
       </div>
 
       {/* 하단 연도 축 */}
@@ -271,7 +316,7 @@ export default function Unit() {
                 <span
                   className={`h-2 w-2 rounded-full ${isOpen ? "bg-mint" : "bg-slate-400"}`}
                 />
-                {isOpen ? `현재 ${last.businessName} 영업중` : "현재 공실"}
+                {isOpen ? `지금은 ${last.businessName} 영업 중` : "지금은 비어 있어요"}
               </span>
             </div>
           </div>
@@ -282,15 +327,15 @@ export default function Unit() {
         {/* 통계 */}
         <div className="fade-up grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="거쳐간 가게" value={statistics.totalTenancyCount} suffix="곳" />
-          <Stat label="폐업" value={statistics.closedCount} suffix="건" accent="flame" />
+          <Stat label="폐업" value={statistics.closedCount} suffix="번" accent="flame" />
           <Stat
-            label="평균 생존"
+            label="평균 영업 기간"
             value={statistics.averageSurvivalMonths}
             suffix="개월"
             accent="blue"
           />
           <Stat
-            label="최장 / 최단"
+            label="가장 길게 / 짧게"
             value={
               statistics.longestSurvivalMonths != null
                 ? `${statistics.longestSurvivalMonths} / ${statistics.shortestSurvivalMonths}`
@@ -309,7 +354,7 @@ export default function Unit() {
             {/* 운영기간 라인 */}
             <Card className="fade-up p-5 sm:p-6">
               <div className="flex items-baseline justify-between">
-                <h2 className="text-lg font-extrabold text-ink">운영기간 라인</h2>
+                <h2 className="text-lg font-extrabold text-ink">운영 타임라인</h2>
                 <span className="text-sm text-slate-400">
                   {ym(timeline[0].licensedAt)} – {isOpen ? "현재" : ym(last.closedAt ?? TODAY)}
                 </span>
@@ -324,11 +369,14 @@ export default function Unit() {
                 />
               </div>
 
-              {/* 범례 */}
-              <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
+              {/* 범례 — 업종 종류 */}
+              <div className="mt-4 flex flex-wrap gap-2">
                 {Object.entries(colors).map(([cat, color]) => (
-                  <span key={cat} className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                    <span className="h-2 w-3.5 rounded-sm" style={{ backgroundColor: color }} />
+                  <span
+                    key={cat}
+                    className="flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-sm font-semibold text-slate-600"
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
                     {cat}
                   </span>
                 ))}
@@ -338,7 +386,7 @@ export default function Unit() {
             {/* 가게 상세 정보 — 막대·기록·드롭다운 어디서 선택해도 여기로 반영 */}
             <Card className="fade-up p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-extrabold text-ink">가게 상세 정보</h2>
+                <h2 className="text-lg font-extrabold text-ink">가게 자세히 보기</h2>
                 <select
                   value={selected}
                   onChange={(e) => setSelected(Number(e.target.value))}
@@ -393,8 +441,8 @@ export default function Unit() {
                     <InfoRow k="보증금 / 월세" v={`${extras.deposit} / ${extras.rent} 원`} />
                     <InfoRow k="권리금" v={extras.premium} />
                     <InfoRow k="일평균 유동인구" v={extras.foot} />
-                    <InfoRow k={`동종업종(${sel.category}) 반경 500m`} v={`${extras.peers}곳`} />
-                    <InfoRow k="상권 공실률" v={extras.vacancy} />
+                    <InfoRow k={`주변 같은 업종(${sel.category})`} v={`${extras.peers}곳`} />
+                    <InfoRow k="주변 공실률" v={extras.vacancy} />
                   </dl>
                   <p className="mt-3 text-[11px] text-slate-400">
                     실 데이터 연동 전 예시값입니다.
@@ -406,8 +454,8 @@ export default function Unit() {
             {/* 세부 입점 기록 */}
             <Card className="fade-up p-5 sm:p-6">
               <div className="flex items-baseline justify-between">
-                <h2 className="text-lg font-extrabold text-ink">세부 입점 기록</h2>
-                <span className="text-sm text-slate-400">최신순 · 막대는 생존개월</span>
+                <h2 className="text-lg font-extrabold text-ink">입점 기록</h2>
+                <span className="text-sm text-slate-400">최근 가게부터 · 막대 길이는 영업 기간</span>
               </div>
               <ol className="mt-4">
                 {timeline

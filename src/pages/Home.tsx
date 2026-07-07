@@ -16,7 +16,7 @@ const CHIPS = ["금토동 405", "판교로 22", "시흥동 123"];
 
 const STEPS: [string, string][] = [
   ["지번 검색", "상가 주소(지번·도로명) 일부만 입력하면 이력이 있는 자리를 찾아드립니다"],
-  ["물건 선택", "지도에서 건물을 고르고 층·호수 단위 물건까지 선택합니다"],
+  ["점포 선택", "지도에서 건물을 고르고 층·호수 단위 점포까지 선택합니다"],
   ["히스토리 확인", "거쳐간 가게 수, 폐업 이력, 평균 생존개월을 한눈에 확인합니다"],
 ];
 
@@ -134,7 +134,7 @@ export default function Home() {
             {q.data && q.data.candidates.length > 0 && (
               <>
                 <div className="mb-2 px-1 text-xs font-semibold text-slate-400">
-                  검색 결과 {q.data.candidates.length}건 · 선택하면 지도로 이동합니다
+                  {q.data.candidates.length}곳을 찾았어요 · 누르면 지도로 이어져요
                 </div>
                 <ul className="space-y-2">
                   {q.data.candidates.map((c) => (
@@ -146,7 +146,7 @@ export default function Home() {
                         <AddressText jibun={c.jibunAddress} road={c.roadAddress} />
                         <span className="flex shrink-0 items-center gap-2">
                           <Pill>
-                            물건 {c.unitCount} · 폐업 {c.closedCount}
+                            점포 {c.unitCount} · 폐업 {c.closedCount}
                           </Pill>
                           <svg
                             viewBox="0 0 24 24"

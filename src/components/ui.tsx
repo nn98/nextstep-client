@@ -193,7 +193,7 @@ export function SearchBar({
           lg ? "px-5 py-2.5" : "px-3.5 py-1.5 text-sm"
         }`}
       >
-        조회
+        검색
       </button>
     </form>
   );

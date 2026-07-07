@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useState,
-  type CSSProperties,
-  type MouseEvent as ReactMouseEvent,
-} from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -67,11 +62,11 @@ export default function MapPage() {
   const navigate = useNavigate();
   const [selPnu, setSelPnu] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
-  // 클릭 지점에서 화면을 덮으며 이동하는 전환
-  const [cover, setCover] = useState<{ x: number; y: number; c: string } | null>(null);
-  const coverGo = (to: string, e: ReactMouseEvent, c: string) => {
-    setCover({ x: e.clientX, y: e.clientY, c });
-    setTimeout(() => navigate(to), 340);
+  // 베일이 살며시 덮인 뒤 이동하는 전환
+  const [cover, setCover] = useState<string | null>(null);
+  const coverGo = (to: string, c: string) => {
+    setCover(c);
+    setTimeout(() => navigate(to), 260);
   };
 
   const list = useQuery({
@@ -139,13 +134,13 @@ export default function MapPage() {
       {/* 플로팅 UI */}
       <div className="pointer-events-none absolute inset-0 z-[1000] flex flex-col p-4 sm:p-5">
         {/* 상단: 브랜드 + 검색(포커스 시 확장) */}
-        <div className="pointer-events-auto flex w-full max-w-[420px] items-center gap-3 transition-all duration-300 focus-within:max-w-[600px]">
+        <div className="pointer-events-auto flex w-full max-w-[330px] items-center gap-3 transition-all duration-300 focus-within:max-w-[620px]">
           {/* Link 기본 이동을 가로채 커버 전환 후 이동 */}
           <div
             onClickCapture={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              coverGo("/", e, "#f6f7f9");
+              coverGo("/", "#f6f7f9");
             }}
             className="cursor-pointer rounded-2xl bg-white/90 px-3 py-2 shadow-lg backdrop-blur transition hover:shadow-xl"
           >
@@ -160,12 +155,21 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* 좌측(모바일: 하단) 플로팅 패널 — 지도 클릭 시 슬라이드 아웃 */}
+        {/* 좌측(모바일: 하단) 플로팅 패널 — 지도 클릭 시 끄트머리만 남기고 슬라이드 아웃 */}
         <div className="flex min-h-0 flex-1 flex-col sm:mt-4">
           <aside
-            className={`pointer-events-auto mt-auto flex max-h-[58dvh] w-full flex-col overflow-hidden rounded-2xl bg-white/95 shadow-2xl backdrop-blur transition-all duration-300 sm:mt-0 sm:max-h-full sm:w-[420px] ${
+            onClickCapture={
               collapsed
-                ? "pointer-events-none translate-y-[130%] opacity-0 sm:-translate-x-[120%] sm:translate-y-0"
+                ? (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setCollapsed(false);
+                  }
+                : undefined
+            }
+            className={`pointer-events-auto mt-auto flex max-h-[58dvh] w-full flex-col overflow-hidden rounded-2xl bg-white/95 shadow-2xl backdrop-blur transition-transform duration-300 ease-out sm:mt-0 sm:max-h-full sm:w-[420px] ${
+              collapsed
+                ? "translate-y-[calc(100%-18px)] cursor-pointer sm:-translate-x-[calc(100%-18px)] sm:translate-y-0"
                 : ""
             }`}
           >
@@ -211,7 +215,7 @@ export default function MapPage() {
 
                 {/* 선택된 자리 요약 */}
                 <div className="border-b border-line px-5 py-4">
-                  <div className="text-xs font-semibold text-slate-400">선택한 자리</div>
+                  <div className="text-xs font-semibold text-slate-400">지금 보고 있는 자리</div>
                   <div className="mt-1 truncate text-lg font-extrabold text-ink">
                     {selected?.jibunAddress}
                   </div>
@@ -220,10 +224,10 @@ export default function MapPage() {
                   </div>
                   <div className="mt-2 flex gap-2 text-xs font-semibold">
                     <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">
-                      물건 {selected?.unitCount}개
+                      점포 {selected?.unitCount}개
                     </span>
                     <span className="rounded-full bg-orange-50 px-2.5 py-1 text-flame">
-                      누적 폐업 {selected?.closedCount}건
+                      폐업 이력 {selected?.closedCount}건
                     </span>
                   </div>
                 </div>
@@ -231,7 +235,7 @@ export default function MapPage() {
                 {/* 물건 목록 */}
                 <div className="min-h-0 flex-1 overflow-y-auto p-3">
                   <div className="px-2 pb-2 text-xs font-semibold text-slate-400">
-                    물건을 선택하면 히스토리를 볼 수 있어요
+                    궁금한 점포를 누르면 히스토리가 열려요
                   </div>
                   {site.isLoading ? (
                     <div className="space-y-2">
@@ -240,7 +244,7 @@ export default function MapPage() {
                       ))}
                     </div>
                   ) : site.data?.units.length === 0 ? (
-                    <EmptyState title="등록된 물건이 없어요" />
+                    <EmptyState title="등록된 점포가 없어요" />
                   ) : (
                     <ul className="space-y-2">
                       {site.data?.units
@@ -249,7 +253,7 @@ export default function MapPage() {
                         .map((u) => (
                           <li key={u.unitId}>
                             <button
-                              onClick={(e) => coverGo(`/units/${u.unitId}`, e, "#0d1b2a")}
+                              onClick={() => coverGo(`/units/${u.unitId}`, "#0d1b2a")}
                               className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line bg-white px-4 py-3 text-left transition hover:border-accent/50 hover:shadow-md"
                             >
                               <span className="min-w-0">
@@ -258,8 +262,8 @@ export default function MapPage() {
                                   <StatusBadge label={u.currentStatus} />
                                 </span>
                                 <span className="mt-0.5 block truncate text-sm text-slate-500">
-                                  {u.currentBusinessName ?? "현재 공실"} ·{" "}
-                                  {u.totalTenancyCount}곳 거쳐감 · 폐업 {u.closedCount}
+                                  {u.currentBusinessName ?? "지금은 비어 있어요"} · 가게{" "}
+                                  {u.totalTenancyCount}곳 거쳐감 · 폐업 {u.closedCount}번
                                   {u.averageSurvivalMonths != null &&
                                     ` · 평균 ${u.averageSurvivalMonths}개월`}
                                 </span>
@@ -308,22 +312,16 @@ export default function MapPage() {
             >
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-            물건 목록
+            점포 목록
           </button>
         )}
       </div>
 
-      {/* 커버 전환 오버레이 */}
+      {/* 커버 베일 오버레이 */}
       {cover && (
         <div
           className="cover-expand fixed inset-0 z-[2000]"
-          style={
-            {
-              backgroundColor: cover.c,
-              "--cx": `${cover.x}px`,
-              "--cy": `${cover.y}px`,
-            } as CSSProperties
-          }
+          style={{ backgroundColor: cover }}
         />
       )}
     </div>
