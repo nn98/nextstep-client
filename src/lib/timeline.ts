@@ -101,10 +101,8 @@ export function yearTicks(items: Span[], todayISO: string): { year: number; left
   return ticks;
 }
 
-const PALETTE = [
-  "#2f8f7d", "#c2410c", "#b45309", "#3b82f6", "#7c3aed",
-  "#be123c", "#15803d", "#a21caf", "#0e7490", "#a16207",
-];
+// ponytail: 단일색(네이비) 명암 래더 — 업종 구분은 명도차 + 범례·라벨로
+const PALETTE = ["#1b2a3f", "#2f4568", "#446390", "#5d80b0", "#7897c2"];
 
 // 업종 → 색상. 첫 등장 순서대로 배정(같은 업종은 같은 색).
 export function categoryColors(categories: string[]): Record<string, string> {

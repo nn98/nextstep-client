@@ -2,18 +2,38 @@ import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { Disclaimer as DisclaimerT } from "../types";
 
-export function Brand({ dark = false }: { dark?: boolean }) {
+export function Brand({ dark = false, compact = false }: { dark?: boolean; compact?: boolean }) {
   return (
-    <Link to="/" className="flex shrink-0 items-center gap-2">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-teal text-sm font-black text-white shadow">
-        N
-      </span>
+    <Link to="/" className="flex shrink-0 items-center gap-2.5">
       <span
-        className={`text-lg font-extrabold tracking-tight ${
-          dark ? "text-white" : "text-ink"
+        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black ${
+          dark ? "bg-white text-navy" : "bg-ink text-white"
         }`}
       >
-        넥스트스텝
+        N
+      </span>
+      <span className="leading-tight">
+        <span
+          className={`block text-[15px] font-extrabold tracking-tight ${
+            dark ? "text-white" : "text-ink"
+          }`}
+        >
+          넥스트스텝{" "}
+          {!compact && (
+            <span className={`font-medium ${dark ? "text-white/60" : "text-slate-500"}`}>
+              상가이력 조회
+            </span>
+          )}
+        </span>
+        {!compact && (
+          <span
+            className={`block text-[9px] font-semibold tracking-[0.18em] ${
+              dark ? "text-white/40" : "text-slate-400"
+            }`}
+          >
+            NEXT STEP · STOREFRONT HISTORY
+          </span>
+        )}
       </span>
     </Link>
   );
@@ -29,7 +49,7 @@ export function Card({ className = "", children }: { className?: string; childre
 
 // 상태 뱃지 — 색+텍스트 병기(색만으로 구분 금지)
 function tone(label: string) {
-  if (/영업/.test(label)) return "text-teal-600 bg-emerald-50 border-emerald-200";
+  if (/영업/.test(label)) return "text-emerald-700 bg-emerald-50 border-emerald-200";
   if (/폐업|철수|종료/.test(label)) return "text-flame bg-orange-50 border-orange-200";
   if (/휴업/.test(label)) return "text-amber-700 bg-amber-50 border-amber-200";
   if (/추정/.test(label)) return "text-slate-500 bg-white border-slate-300";
@@ -72,10 +92,10 @@ export function Stat({
   label: string;
   value: number | string | null;
   suffix?: string;
-  accent?: "teal" | "flame";
+  accent?: "blue" | "flame";
 }) {
   const color =
-    accent === "flame" ? "text-flame" : accent === "teal" ? "text-teal" : "text-ink";
+    accent === "flame" ? "text-flame" : accent === "blue" ? "text-accent" : "text-ink";
   return (
     <div className="rounded-2xl border border-line bg-white p-4 shadow-sm">
       <div className="text-xs font-semibold text-slate-400">{label}</div>
@@ -169,7 +189,7 @@ export function SearchBar({
       />
       <button
         type="submit"
-        className={`shrink-0 rounded-xl bg-teal font-bold text-white transition hover:bg-teal-600 ${
+        className={`shrink-0 rounded-xl bg-ink font-bold text-white transition hover:bg-navy-600 ${
           lg ? "px-5 py-2.5" : "px-3.5 py-1.5 text-sm"
         }`}
       >

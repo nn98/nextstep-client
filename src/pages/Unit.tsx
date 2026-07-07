@@ -200,7 +200,7 @@ export default function Unit() {
             onRetry={notFound ? undefined : () => q.refetch()}
           />
           <div className="pb-4 text-center">
-            <Link to="/" className="text-sm font-semibold text-teal hover:underline">
+            <Link to="/" className="text-sm font-semibold text-accent hover:underline">
               검색으로 돌아가기
             </Link>
           </div>
@@ -220,8 +220,12 @@ export default function Unit() {
   return (
     <div className="min-h-dvh bg-paper">
       {/* 네이비 히어로 */}
-      <div className="bg-navy pb-24 pt-4 text-white">
-        <div className="mx-auto w-full max-w-4xl px-5">
+      <div className="relative overflow-hidden bg-navy pb-24 pt-4 text-white">
+        <div
+          aria-hidden
+          className="grid-bg-dark pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]"
+        />
+        <div className="relative mx-auto w-full max-w-4xl px-5">
           <div className="flex items-center justify-between">
             <Brand dark />
             <Link
@@ -259,7 +263,7 @@ export default function Unit() {
             label="평균 생존"
             value={statistics.averageSurvivalMonths}
             suffix="개월"
-            accent="teal"
+            accent="blue"
           />
           <Stat
             label="최장 / 최단"

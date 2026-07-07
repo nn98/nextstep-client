@@ -22,7 +22,7 @@ const pinIcon = (active: boolean) =>
     iconAnchor: [15, 40],
     html: `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
       <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z" fill="${
-        active ? "#0d1b2a" : "#2f8f7d"
+        active ? "#16202e" : "#94a7c4"
       }" stroke="white" stroke-width="1.5"/>
       <circle cx="15" cy="15" r="5.5" fill="white"/>
     </svg>`,
@@ -87,9 +87,10 @@ export default function MapPage() {
         zoomControl={false}
         className="h-full w-full"
       >
+        {/* 파스텔톤 라이트 타일(CARTO Positron) */}
         <TileLayer
-          attribution="&copy; OpenStreetMap"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         <ZoomControl position="bottomright" />
         <FitBounds points={points} />
@@ -204,7 +205,7 @@ export default function MapPage() {
                           <li key={u.unitId}>
                             <button
                               onClick={() => navigate(`/units/${u.unitId}`)}
-                              className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line bg-white px-4 py-3 text-left transition hover:border-teal hover:shadow-md"
+                              className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line bg-white px-4 py-3 text-left transition hover:border-accent/50 hover:shadow-md"
                             >
                               <span className="min-w-0">
                                 <span className="flex items-center gap-2">
