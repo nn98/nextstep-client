@@ -1,7 +1,19 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { MapContainer, TileLayer, Marker, ZoomControl, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  ZoomControl,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 import { search, featuredSites, getSite } from "../api/client";
 import type { Candidate } from "../types";
@@ -31,6 +43,12 @@ const pinIcon = (active: boolean) =>
 const DEFAULT_CENTER: [number, number] = [37.4013, 127.1047];
 type Located = Candidate & { latitude: number; longitude: number };
 
+// 지도 빈 곳 클릭 → 패널 접기(마커 클릭은 map click으로 전파되지 않음)
+function MapClick({ onClick }: { onClick: () => void }) {
+  useMapEvents({ click: onClick });
+  return null;
+}
+
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
   useEffect(() => {
@@ -48,6 +66,13 @@ export default function MapPage() {
   const pnuParam = params.get("pnu");
   const navigate = useNavigate();
   const [selPnu, setSelPnu] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  // 클릭 지점에서 화면을 덮으며 이동하는 전환
+  const [cover, setCover] = useState<{ x: number; y: number; c: string } | null>(null);
+  const coverGo = (to: string, e: ReactMouseEvent, c: string) => {
+    setCover({ x: e.clientX, y: e.clientY, c });
+    setTimeout(() => navigate(to), 340);
+  };
 
   const list = useQuery({
     queryKey: ["map", q],
@@ -93,6 +118,7 @@ export default function MapPage() {
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         <ZoomControl position="bottomright" />
+        <MapClick onClick={() => setCollapsed(true)} />
         <FitBounds points={points} />
         {candidates.map((c) => (
           <Marker
@@ -100,17 +126,30 @@ export default function MapPage() {
             position={[c.latitude, c.longitude]}
             icon={pinIcon(c.pnu === selPnu)}
             zIndexOffset={c.pnu === selPnu ? 1000 : 0}
-            eventHandlers={{ click: () => setSelPnu(c.pnu) }}
+            eventHandlers={{
+              click: () => {
+                setSelPnu(c.pnu);
+                setCollapsed(false);
+              },
+            }}
           />
         ))}
       </MapContainer>
 
       {/* 플로팅 UI */}
       <div className="pointer-events-none absolute inset-0 z-[1000] flex flex-col p-4 sm:p-5">
-        {/* 상단: 브랜드 + 검색 */}
-        <div className="pointer-events-auto flex w-full max-w-[420px] items-center gap-3">
-          <div className="rounded-2xl bg-white/90 px-3 py-2 shadow-lg backdrop-blur">
-            <Brand />
+        {/* 상단: 브랜드 + 검색(포커스 시 확장) */}
+        <div className="pointer-events-auto flex w-full max-w-[420px] items-center gap-3 transition-all duration-300 focus-within:max-w-[600px]">
+          {/* Link 기본 이동을 가로채 커버 전환 후 이동 */}
+          <div
+            onClickCapture={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              coverGo("/", e, "#f6f7f9");
+            }}
+            className="cursor-pointer rounded-2xl bg-white/90 px-3 py-2 shadow-lg backdrop-blur transition hover:shadow-xl"
+          >
+            <Brand compact />
           </div>
           <div className="min-w-0 flex-1">
             <SearchBar
@@ -121,9 +160,15 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* 좌측(모바일: 하단) 플로팅 패널 */}
+        {/* 좌측(모바일: 하단) 플로팅 패널 — 지도 클릭 시 슬라이드 아웃 */}
         <div className="flex min-h-0 flex-1 flex-col sm:mt-4">
-          <aside className="pointer-events-auto mt-auto flex max-h-[58dvh] w-full flex-col overflow-hidden rounded-2xl bg-white/95 shadow-2xl backdrop-blur sm:mt-0 sm:max-h-full sm:w-[420px]">
+          <aside
+            className={`pointer-events-auto mt-auto flex max-h-[58dvh] w-full flex-col overflow-hidden rounded-2xl bg-white/95 shadow-2xl backdrop-blur transition-all duration-300 sm:mt-0 sm:max-h-full sm:w-[420px] ${
+              collapsed
+                ? "pointer-events-none translate-y-[130%] opacity-0 sm:-translate-x-[120%] sm:translate-y-0"
+                : ""
+            }`}
+          >
             {list.isLoading && (
               <div className="space-y-2 p-4">
                 {[0, 1, 2].map((i) => (
@@ -204,7 +249,7 @@ export default function MapPage() {
                         .map((u) => (
                           <li key={u.unitId}>
                             <button
-                              onClick={() => navigate(`/units/${u.unitId}`)}
+                              onClick={(e) => coverGo(`/units/${u.unitId}`, e, "#0d1b2a")}
                               className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line bg-white px-4 py-3 text-left transition hover:border-accent/50 hover:shadow-md"
                             >
                               <span className="min-w-0">
@@ -246,7 +291,41 @@ export default function MapPage() {
             )}
           </aside>
         </div>
+
+        {/* 접힌 패널 다시 열기 */}
+        {collapsed && (
+          <button
+            onClick={() => setCollapsed(false)}
+            className="fade-up pointer-events-auto absolute bottom-6 left-4 flex items-center gap-2 rounded-full bg-navy px-4 py-2.5 text-sm font-bold text-white shadow-xl transition hover:bg-navy-600 sm:left-5"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            물건 목록
+          </button>
+        )}
       </div>
+
+      {/* 커버 전환 오버레이 */}
+      {cover && (
+        <div
+          className="cover-expand fixed inset-0 z-[2000]"
+          style={
+            {
+              backgroundColor: cover.c,
+              "--cx": `${cover.x}px`,
+              "--cy": `${cover.y}px`,
+            } as CSSProperties
+          }
+        />
+      )}
     </div>
   );
 }

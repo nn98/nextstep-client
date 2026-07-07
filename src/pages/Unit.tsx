@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getUnit } from "../api/client";
@@ -19,6 +19,29 @@ const TODAY = new Date().toISOString().slice(0, 10);
 const ym = (d: string) => d.slice(0, 7).replace("-", ".");
 const period = (t: Tenancy) =>
   t.closedAt ? `${ym(t.licensedAt)} – ${ym(t.closedAt)}` : `${ym(t.licensedAt)} – 현재`;
+
+// ponytail: 계약·주변상권 정보는 API 미제공 — 데모용 예시값(가게 인덱스 기반 고정)
+function mockExtras(i: number) {
+  const pick = <T,>(arr: T[]) => arr[i % arr.length];
+  return {
+    area: pick(["42.6㎡", "56.2㎡", "33.1㎡", "48.9㎡", "38.5㎡"]),
+    deposit: pick(["5,000만", "3,000만", "4,000만", "6,000만", "4,500만"]),
+    rent: pick(["280만", "190만", "230만", "310만", "250만"]),
+    premium: pick(["무", "3,000만 원", "무", "1,500만 원", "2,000만 원"]),
+    foot: pick(["21,400명", "18,700명", "24,100명", "16,900명", "22,800명"]),
+    peers: pick([14, 9, 17, 11, 12]),
+    vacancy: pick(["6.2%", "8.1%", "4.7%", "7.4%", "5.5%"]),
+  };
+}
+
+function InfoRow({ k, v }: { k: string; v: ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 text-sm">
+      <dt className="shrink-0 text-slate-400">{k}</dt>
+      <dd className="text-right font-semibold text-ink">{v}</dd>
+    </div>
+  );
+}
 
 // 운영기간 라인: 업종 색 세그먼트 + 연도 축
 function TimelineBar({
@@ -215,6 +238,7 @@ export default function Unit() {
   const last = timeline[timeline.length - 1];
   const isOpen = last?.status === "영업";
   const sel = timeline[selected];
+  const extras = mockExtras(selected);
   const maxMonths = Math.max(...timeline.map((t) => t.survivalMonths ?? 0), 1);
 
   return (
@@ -300,17 +324,6 @@ export default function Unit() {
                 />
               </div>
 
-              {/* 선택됨 요약 */}
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-line bg-slate-50 px-4 py-3">
-                <span className="text-xs font-bold text-slate-400">선택됨</span>
-                <span className="font-extrabold text-ink">{sel.businessName}</span>
-                <span className="text-sm tabular-nums text-slate-500">{period(sel)}</span>
-                <span className="ml-auto flex items-center gap-2 text-sm text-slate-500">
-                  {sel.category} · {sel.survivalMonths ?? "-"}개월
-                  <StatusBadge label={sel.status} />
-                </span>
-              </div>
-
               {/* 범례 */}
               <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
                 {Object.entries(colors).map(([cat, color]) => (
@@ -319,6 +332,74 @@ export default function Unit() {
                     {cat}
                   </span>
                 ))}
+              </div>
+            </Card>
+
+            {/* 가게 상세 정보 — 막대·기록·드롭다운 어디서 선택해도 여기로 반영 */}
+            <Card className="fade-up p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-lg font-extrabold text-ink">가게 상세 정보</h2>
+                <select
+                  value={selected}
+                  onChange={(e) => setSelected(Number(e.target.value))}
+                  aria-label="가게 선택"
+                  className="rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold text-ink focus:border-accent focus:outline-none"
+                >
+                  {timeline.map((t, i) => (
+                    <option key={i} value={i}>
+                      {t.businessName} · {period(t)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* key로 선택 변경 시 페이드 재생 */}
+              <div key={selected} className="fade-up mt-4 grid gap-3 sm:grid-cols-2">
+                {/* 인허가 정보 */}
+                <section className="rounded-xl border border-line bg-slate-50 p-4">
+                  <h3 className="text-xs font-bold tracking-wide text-slate-400">
+                    인허가 정보
+                  </h3>
+                  <dl className="mt-3 space-y-2">
+                    <InfoRow k="상호명" v={sel.businessName} />
+                    <InfoRow k="업종" v={sel.category} />
+                    <InfoRow k="개업일자" v={sel.licensedAt} />
+                    <InfoRow
+                      k="폐업일자"
+                      v={
+                        sel.closedAt ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            {sel.closedAt}
+                            {sel.closedAtEstimated && <StatusBadge label="추정" />}
+                          </span>
+                        ) : (
+                          "영업중"
+                        )
+                      }
+                    />
+                    <InfoRow k="영업기간" v={`${sel.survivalMonths ?? "-"}개월`} />
+                    <InfoRow k="영업상태" v={<StatusBadge label={sel.status} />} />
+                  </dl>
+                </section>
+
+                {/* 계약·주변상권 (예시) */}
+                <section className="rounded-xl border border-dashed border-line bg-white p-4">
+                  <h3 className="flex items-center gap-2 text-xs font-bold tracking-wide text-slate-400">
+                    계약·주변상권 정보
+                    <StatusBadge label="예시" />
+                  </h3>
+                  <dl className="mt-3 space-y-2">
+                    <InfoRow k="전용면적" v={extras.area} />
+                    <InfoRow k="보증금 / 월세" v={`${extras.deposit} / ${extras.rent} 원`} />
+                    <InfoRow k="권리금" v={extras.premium} />
+                    <InfoRow k="일평균 유동인구" v={extras.foot} />
+                    <InfoRow k={`동종업종(${sel.category}) 반경 500m`} v={`${extras.peers}곳`} />
+                    <InfoRow k="상권 공실률" v={extras.vacancy} />
+                  </dl>
+                  <p className="mt-3 text-[11px] text-slate-400">
+                    실 데이터 연동 전 예시값입니다.
+                  </p>
+                </section>
               </div>
             </Card>
 

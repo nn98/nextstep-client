@@ -61,6 +61,19 @@ body {
   animation: page-fade 0.25s ease both;
 }
 
+/* 클릭 지점에서 원형으로 화면을 덮는 전환 */
+@keyframes cover-grow {
+  from {
+    clip-path: circle(0px at var(--cx) var(--cy));
+  }
+  to {
+    clip-path: circle(150% at var(--cx) var(--cy));
+  }
+}
+.cover-expand {
+  animation: cover-grow 0.35s ease-in both;
+}
+
 /* 매트릭스 그리드 배경 */
 .grid-bg {
   background-image: linear-gradient(to right, rgba(22, 32, 46, 0.05) 1px, transparent 1px),

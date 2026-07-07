@@ -15,9 +15,9 @@ import {
 const CHIPS = ["금토동 405", "판교로 22", "시흥동 123"];
 
 const STEPS: [string, string][] = [
-  ["지번 검색", "지번·도로명 일부만 입력"],
-  ["물건 선택", "지도에서 건물과 점포 선택"],
-  ["히스토리 확인", "개·폐업 기록과 생존 통계"],
+  ["지번 검색", "상가 주소(지번·도로명) 일부만 입력하면 이력이 있는 자리를 찾아드립니다"],
+  ["물건 선택", "지도에서 건물을 고르고 층·호수 단위 물건까지 선택합니다"],
+  ["히스토리 확인", "거쳐간 가게 수, 폐업 이력, 평균 생존개월을 한눈에 확인합니다"],
 ];
 
 export default function Home() {
@@ -57,7 +57,7 @@ export default function Home() {
         <div className="fade-up">
           <span className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-accent shadow-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            창업 전 상가 이력 조회 서비스
+            창업예정자·신규 창업자를 위한 상가 이력 조회
           </span>
           <h1 className="mt-6 text-4xl font-black leading-[1.18] tracking-tight text-ink sm:text-5xl">
             이 자리, 지금까지
@@ -65,8 +65,9 @@ export default function Home() {
             <span className="text-accent">몇 개의 가게</span>가 거쳐갔을까요?
           </h1>
           <p className="mt-5 max-w-xl leading-relaxed text-slate-500">
-            지번 하나로 해당 상가의 개업·폐업 이력과 평균 생존기간을 확인합니다.
-            계약 전, 자리의 진짜 이력을 데이터로 확인하세요.
+            지번 하나로 그 자리를 거쳐간 가게들의 개업·폐업 이력, 업종 변화,
+            평균 생존기간을 확인합니다. 권리금과 임대료 뒤에 숨은 자리의 진짜 이력 —
+            계약서에 도장을 찍기 전에 데이터로 검증하세요.
           </p>
         </div>
 
