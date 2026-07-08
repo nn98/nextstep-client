@@ -30,19 +30,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
 const ym = (d: string) => d.slice(0, 7).replace("-", ".");
 const period = (t: Tenancy) =>
   t.closedAt ? `${ym(t.licensedAt)} – ${ym(t.closedAt)}` : `${ym(t.licensedAt)} – 현재`;
-
-// ponytail: 계약·주변상권 정보는 neighborhood 데이터셋 미제공 항목만 예시값(가게 인덱스 기반 고정)
-function mockExtras(i: number) {
-  const pick = <T,>(arr: T[]) => arr[i % arr.length];
-  return {
-    area: pick(["42.6㎡", "56.2㎡", "33.1㎡", "48.9㎡", "38.5㎡"]),
-    deposit: pick(["5,000만", "3,000만", "4,000만", "6,000만", "4,500만"]),
-    rent: pick(["280만", "190만", "230만", "310만", "250만"]),
-    premium: pick(["무", "3,000만 원", "무", "1,500만 원", "2,000만 원"]),
-    foot: pick(["21,400명", "18,700명", "24,100명", "16,900명", "22,800명"]),
-    vacancy: pick(["6.2%", "8.1%", "4.7%", "7.4%", "5.5%"]),
-  };
-}
+const manwon = (krw: number) => `${(krw / 10000).toLocaleString()}만`;
 
 function InfoRow({ k, v }: { k: string; v: ReactNode }) {
   return (
@@ -381,7 +369,8 @@ function RecordRow({
 
 export default function Unit() {
   const { unitId } = useParams();
-  const [selected, setSelected] = useState(0);
+  // 기본 선택값 = 가장 최근(마지막) 이력. timeline 길이를 알기 전엔 null.
+  const [selected, setSelected] = useState<number | null>(null);
 
   const q = useQuery({
     queryKey: ["unit", unitId],
@@ -429,12 +418,12 @@ export default function Unit() {
   }
 
   if (!q.data) return null;
-  const { unit, statistics, timeline, neighborhood, disclaimer } = q.data;
+  const { unit, statistics, timeline, disclaimer } = q.data;
   const colors = categoryColors(timeline.map((t) => t.category));
   const last = timeline[timeline.length - 1];
   const isOpen = last?.status === "영업";
-  const sel = timeline[selected];
-  const extras = mockExtras(selected);
+  const selectedIndex = selected ?? timeline.length - 1;
+  const sel = timeline[selectedIndex];
   const maxMonths = Math.max(...timeline.map((t) => t.survivalMonths ?? 0), 1);
 
   const risk = riskLevel(statistics.closedCount);
@@ -442,7 +431,7 @@ export default function Unit() {
   const span = yearsSpan(timeline, TODAY);
   const diagnosisLines = buildDiagnosis(statistics, timeline, TODAY);
   const signalCards = buildSignals(statistics, timeline, TODAY);
-  const checklistItems = buildChecklist(statistics, timeline, neighborhood, TODAY);
+  const checklistItems = buildChecklist(statistics, timeline, sel.marketInfo.sameCategoryNearbyCount, TODAY);
 
   return (
     <div className="min-h-dvh bg-paper pb-16">
@@ -516,7 +505,7 @@ export default function Unit() {
                 title="운영 타임라인"
                 aside={`${ym(timeline[0].licensedAt)} – ${isOpen ? "현재" : ym(last.closedAt ?? TODAY)}`}
               />
-              <TimelineBar timeline={timeline} colors={colors} selected={selected} onSelect={setSelected} />
+              <TimelineBar timeline={timeline} colors={colors} selected={selectedIndex} onSelect={setSelected} />
               <div className="mt-4 inline-flex max-w-full divide-x divide-line overflow-x-auto rounded-full border border-line bg-white shadow-[0_1px_5px_rgba(13,27,42,0.13)]">
                 {Object.entries(colors).map(([cat, color]) => (
                   <span
@@ -535,7 +524,7 @@ export default function Unit() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <SectionHeading no="03" label="DETAIL" title="매장 세부정보" />
                 <select
-                  value={selected}
+                  value={selectedIndex}
                   onChange={(e) => setSelected(Number(e.target.value))}
                   aria-label="가게 선택"
                   className="mb-4 h-fit rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold text-ink focus:border-accent focus:outline-none"
@@ -548,7 +537,7 @@ export default function Unit() {
                 </select>
               </div>
 
-              <div key={selected} className="fade-up grid gap-3 sm:grid-cols-2">
+              <div key={selectedIndex} className="fade-up grid gap-3 sm:grid-cols-2">
                 <section className="rounded-xl border border-line bg-slate-50 p-4">
                   <h3 className="text-xs font-bold tracking-wide text-slate-400">인허가 정보</h3>
                   <dl className="mt-3 space-y-2">
@@ -576,30 +565,56 @@ export default function Unit() {
                 <section className="rounded-xl border border-dashed border-line bg-white p-4">
                   <h3 className="flex items-center gap-2 text-xs font-bold tracking-wide text-slate-400">
                     계약·주변상권 정보
-                    {!neighborhood && <StatusBadge label="예시" />}
+                    {sel.marketInfo.isPlaceholder && <StatusBadge label="예시" />}
                   </h3>
                   <dl className="mt-3 space-y-2">
-                    <InfoRow k="전용면적" v={extras.area} />
-                    <InfoRow k="보증금 / 월세" v={`${extras.deposit} / ${extras.rent} 원`} />
-                    <InfoRow k="권리금" v={extras.premium} />
-                    <InfoRow k="일평균 유동인구" v={extras.foot} />
-                    {neighborhood ? (
-                      <>
-                        <InfoRow
-                          k={`반경 ${neighborhood.radiusMeters}m 동일 업종`}
-                          v={`${neighborhood.sameCategoryCount}곳`}
-                        />
-                        <InfoRow k="반경 내 전체 점포" v={`${neighborhood.totalStoreCount}곳`} />
-                      </>
-                    ) : (
-                      <InfoRow k={`주변 같은 업종(${sel.category})`} v="자료 없음" />
-                    )}
-                    <InfoRow k="주변 공실률" v={extras.vacancy} />
+                    <InfoRow
+                      k="전용면적"
+                      v={sel.marketInfo.leaseAreaSqm != null ? `${sel.marketInfo.leaseAreaSqm}㎡` : "-"}
+                    />
+                    <InfoRow
+                      k="보증금 / 월세"
+                      v={
+                        sel.marketInfo.depositKrw != null && sel.marketInfo.monthlyRentKrw != null
+                          ? `${manwon(sel.marketInfo.depositKrw)} / ${manwon(sel.marketInfo.monthlyRentKrw)} 원`
+                          : "-"
+                      }
+                    />
+                    <InfoRow
+                      k="권리금"
+                      v={
+                        sel.marketInfo.keyMoneyKrw == null
+                          ? "-"
+                          : sel.marketInfo.keyMoneyKrw === 0
+                          ? "무"
+                          : `${manwon(sel.marketInfo.keyMoneyKrw)} 원`
+                      }
+                    />
+                    <InfoRow
+                      k="일평균 유동인구"
+                      v={
+                        sel.marketInfo.dailyFloatingPopulation != null
+                          ? `${sel.marketInfo.dailyFloatingPopulation.toLocaleString()}명`
+                          : "-"
+                      }
+                    />
+                    <InfoRow
+                      k={`주변 같은 업종(${sel.category})`}
+                      v={
+                        sel.marketInfo.sameCategoryNearbyCount != null ? (
+                          <span className="text-accent">{sel.marketInfo.sameCategoryNearbyCount}곳</span>
+                        ) : (
+                          "자료 없음"
+                        )
+                      }
+                    />
+                    <InfoRow
+                      k="주변 공실률"
+                      v={sel.marketInfo.vacancyRatePercent != null ? `${sel.marketInfo.vacancyRatePercent}%` : "-"}
+                    />
                   </dl>
                   <p className="mt-3 text-[11px] text-slate-400">
-                    {neighborhood
-                      ? `주변상권 기준일 ${neighborhood.snapshotAt} · 면적·보증금 등 일부 항목은 예시값입니다.`
-                      : "실 데이터 연동 전 예시값입니다."}
+                    실 데이터 연동 전 예시값입니다 · 기준일 {sel.marketInfo.asOf}
                   </p>
                 </section>
               </div>
@@ -645,7 +660,7 @@ export default function Unit() {
                     color={colors[t.category]}
                     maxMonths={maxMonths}
                     isLast={i === timeline.length - 1}
-                    selected={i === selected}
+                    selected={i === selectedIndex}
                     onSelect={() => setSelected(i)}
                   />
                 ))}

@@ -1,7 +1,7 @@
 // 상세 페이지의 진단/위험도/신호/체크리스트 — 전부 statistics·timeline(그리고 있으면 neighborhood)에서
 // 파생 계산. 규칙이 하나로 정해져 있는 값이 아니라 첫 버전 휴리스틱이므로, 실제 서비스화 시
 // 폐업 데이터가 쌓이면 임계값(closedCount 구간 등)을 다시 튜닝해야 한다.
-import type { Neighborhood, Statistics, Tenancy } from "../types";
+import type { Statistics, Tenancy } from "../types";
 import { DAY, monthsBetween } from "./timeline.ts";
 
 const YEAR = 365 * DAY;
@@ -133,7 +133,7 @@ export interface ChecklistItem {
 export function checklist(
   statistics: Statistics,
   timeline: Tenancy[],
-  neighborhood: Neighborhood | undefined,
+  sameCategoryNearbyCount: number | null,
   todayISO: string
 ): ChecklistItem[] {
   const span = yearsSpan(timeline, todayISO);
@@ -168,9 +168,10 @@ export function checklist(
     },
     {
       title: "주변 동일 업종 분포",
-      desc: neighborhood
-        ? `반경 ${neighborhood.radiusMeters}m 내 동일 업종 ${neighborhood.sameCategoryCount}곳 · 전체 ${neighborhood.totalStoreCount}곳`
-        : "동일 지번 및 인접 상권의 유사 업종 분포도 함께 검토하세요.",
+      desc:
+        sameCategoryNearbyCount != null
+          ? `반경 300m 내 동일 업종 ${sameCategoryNearbyCount}곳(현재 시점 기준 실시간 상권데이터)`
+          : "동일 지번 및 인접 상권의 유사 업종 분포도 함께 검토하세요.",
       status: "ok",
     },
   ];

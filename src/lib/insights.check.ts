@@ -47,11 +47,13 @@ const diag = diagnosis(stats, timeline, today);
 assert.ok(diag.length >= 3, "진단 문장 최소 3개");
 assert.ok(diag[0].includes("13년"));
 
-const items = checklist(stats, timeline, undefined, today);
+const items = checklist(stats, timeline, null, today);
 assert.strictEqual(items.length, 5, "체크리스트 5항목");
 assert.strictEqual(items[1].status, "ok", "반복 실패 없으니 ok");
-const itemsWithRepeat = checklist(stats, repeatTimeline, undefined, today);
+const itemsWithRepeat = checklist(stats, repeatTimeline, null, today);
 assert.strictEqual(itemsWithRepeat[1].status, "warn", "반복 실패 있으면 warn");
-assert.ok(items[4].desc.includes("검토"), "neighborhood 없으면 안내 문구로 대체");
+assert.ok(items[4].desc.includes("검토"), "sameCategoryNearbyCount 없으면 안내 문구로 대체");
+const itemsWithCount = checklist(stats, timeline, 14, today);
+assert.ok(itemsWithCount[4].desc.includes("14곳"), "실값 있으면 곳 수를 그대로 노출");
 
 console.log("insights.check ok");
