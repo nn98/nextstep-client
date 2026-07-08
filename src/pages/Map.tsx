@@ -16,6 +16,7 @@ import {
   Brand,
   Disclaimer,
   EmptyState,
+  Pill,
   SearchBar,
   Skeleton,
   StatusBadge,
@@ -29,8 +30,8 @@ const pinIcon = (active: boolean) =>
     iconAnchor: [15, 40],
     html: `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
       <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z" fill="${
-        active ? "#1f2422" : "#a39c86"
-      }" stroke="#efede3" stroke-width="1.5"/>
+        active ? "#142542" : "#9fb0c8"
+      }" stroke="white" stroke-width="1.5"/>
       <circle cx="15" cy="15" r="5.5" fill="white"/>
     </svg>`,
   });
@@ -140,18 +141,14 @@ export default function MapPage() {
             onClickCapture={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              coverGo("/", "#efede3", false);
+              coverGo("/", "#f4f6f8", false);
             }}
-            className="cursor-pointer border border-ledger bg-paper/95 px-3 py-2 shadow-sm transition hover:border-ink"
+            className="cursor-pointer rounded-2xl bg-white/90 px-3 py-2 shadow-lg backdrop-blur transition hover:shadow-xl"
           >
             <Brand compact />
           </div>
           <div className="min-w-0 flex-1">
-            <SearchBar
-              size="md"
-              initial={q}
-              onSearch={(v) => setParams(v ? { q: v } : {})}
-            />
+            <SearchBar size="md" initial={q} onSearch={(v) => setParams(v ? { q: v } : {})} />
           </div>
         </div>
 
@@ -167,7 +164,7 @@ export default function MapPage() {
                   }
                 : undefined
             }
-            className={`pointer-events-auto mt-auto flex max-h-[58dvh] w-full flex-col overflow-hidden border border-ledger bg-paper/95 shadow-sm transition-transform duration-300 ease-out sm:mt-0 sm:max-h-full sm:w-[420px] ${
+            className={`pointer-events-auto mt-auto flex max-h-[58dvh] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-transform duration-300 ease-out sm:mt-0 sm:max-h-full sm:w-[420px] ${
               collapsed
                 ? "translate-y-[calc(100%-18px)] cursor-pointer sm:-translate-x-[calc(100%-18px)] sm:translate-y-0"
                 : ""
@@ -194,47 +191,37 @@ export default function MapPage() {
 
             {candidates.length > 0 && (
               <>
-                {/* 자리(후보) 선택 */}
-                {candidates.length > 1 && (
-                  <div className="flex gap-1.5 overflow-x-auto border-b border-ledger p-3">
-                    {candidates.map((c) => (
-                      <button
-                        key={c.pnu}
-                        onClick={() => setSelPnu(c.pnu)}
-                        className={`shrink-0 border px-3.5 py-1.5 font-mono text-xs font-medium transition ${
-                          c.pnu === selPnu
-                            ? "border-ink bg-ink text-paper"
-                            : "border-ledger bg-white/60 text-ink/55 hover:border-ink/50"
-                        }`}
-                      >
-                        {c.jibunAddress.split(" ").slice(-2).join(" ")}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* 선택된 자리 요약 */}
-                <div className="border-b border-ledger px-5 py-4">
-                  <div className="font-mono text-[11px] tracking-wide text-ink/40">지금 보고 있는 자리</div>
-                  <div className="mt-1 truncate font-display text-lg font-bold text-ink">
-                    {selected?.jibunAddress}
-                  </div>
-                  <div className="mt-0.5 truncate font-mono text-xs text-ink/45">
-                    {selected?.roadAddress}
-                  </div>
-                  <div className="mt-2 flex gap-2 font-mono text-xs">
-                    <span className="border border-ledger px-2.5 py-1 text-ink/55">
-                      점포 {selected?.unitCount}개
-                    </span>
-                    <span className="border border-closed/40 px-2.5 py-1 text-closed">
+                {/* 남색 헤더 바 — 선택된 자리 요약 */}
+                <div className="bg-navy px-5 py-4 text-white">
+                  {candidates.length > 1 && (
+                    <div className="mb-3 flex gap-1.5 overflow-x-auto">
+                      {candidates.map((c) => (
+                        <button
+                          key={c.pnu}
+                          onClick={() => setSelPnu(c.pnu)}
+                          className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold transition ${
+                            c.pnu === selPnu ? "bg-white text-navy" : "bg-white/10 text-white/60 hover:bg-white/20"
+                          }`}
+                        >
+                          {c.jibunAddress.split(" ").slice(-2).join(" ")}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs font-semibold text-white/50">지금 보고 있는 자리</p>
+                  <p className="mt-1 truncate text-lg font-extrabold">{selected?.jibunAddress}</p>
+                  <p className="mt-0.5 truncate text-sm text-white/50">{selected?.roadAddress}</p>
+                  <div className="mt-2.5 flex gap-2">
+                    <Pill tone="fall">점포 {selected?.unitCount}개</Pill>
+                    <Pill tone={(selected?.closedCount ?? 0) >= 5 ? "rise" : "neutral"}>
                       폐업 이력 {selected?.closedCount}건
-                    </span>
+                    </Pill>
                   </div>
                 </div>
 
-                {/* 물건 목록 */}
+                {/* 점포 목록 */}
                 <div className="min-h-0 flex-1 overflow-y-auto p-3">
-                  <div className="px-2 pb-2 font-mono text-[11px] text-ink/40">
+                  <div className="px-2 pb-2 text-xs font-semibold text-ink/40">
                     궁금한 점포를 누르면 히스토리가 열려요
                   </div>
                   {site.isLoading ? (
@@ -253,12 +240,12 @@ export default function MapPage() {
                         .map((u) => (
                           <li key={u.unitId}>
                             <button
-                              onClick={() => coverGo(`/units/${u.unitId}`, "#1f2422", true)}
-                              className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 border border-ledger bg-white/50 px-4 py-3 text-left transition hover:border-ink"
+                              onClick={() => coverGo(`/units/${u.unitId}`, "#142542", true)}
+                              className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line bg-white px-4 py-3 text-left transition hover:border-navy/30 hover:shadow-sm"
                             >
                               <span className="min-w-0">
                                 <span className="flex items-center gap-2">
-                                  <span className="font-display font-bold text-ink">{u.label}</span>
+                                  <span className="font-bold text-ink">{u.label}</span>
                                   <StatusBadge label={u.currentStatus} />
                                 </span>
                                 <span className="mt-0.5 block truncate text-sm text-ink/50">
@@ -287,7 +274,7 @@ export default function MapPage() {
                 </div>
 
                 {site.data && (
-                  <div className="border-t border-ledger px-5 py-3">
+                  <div className="border-t border-line px-5 py-3">
                     <Disclaimer disclaimer={site.data.disclaimer} />
                   </div>
                 )}
@@ -300,7 +287,7 @@ export default function MapPage() {
         {collapsed && (
           <button
             onClick={() => setCollapsed(false)}
-            className="fade-up pointer-events-auto absolute bottom-6 left-4 flex items-center gap-2 border border-ink bg-ink px-4 py-2.5 font-mono text-sm font-medium text-paper shadow-sm transition hover:bg-stamp-navy hover:border-stamp-navy sm:left-5"
+            className="fade-up pointer-events-auto absolute bottom-6 left-4 flex items-center gap-2 rounded-full bg-navy px-4 py-2.5 text-sm font-bold text-white shadow-xl transition hover:bg-navy-600 sm:left-5"
           >
             <svg
               viewBox="0 0 24 24"
