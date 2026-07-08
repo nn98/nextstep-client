@@ -108,6 +108,17 @@ export default function Home() {
         {/* 검색 결과 */}
         {query !== null && (
           <section className="mt-8 max-w-xl">
+            {/* 안내문 자리를 미리 확보 — 로딩→결과 전환 시 아래 목록이 밀리지 않도록 */}
+            <div className="mb-2 h-4 px-1 text-xs font-semibold text-slate-400">
+              {q.isLoading ? (
+                <Skeleton className="h-3 w-40" />
+              ) : (
+                q.data &&
+                q.data.candidates.length > 0 &&
+                `${q.data.candidates.length}곳을 찾았어요 · 누르면 지도로 이어져요`
+              )}
+            </div>
+
             {q.isLoading && (
               <div className="space-y-2">
                 {[0, 1].map((i) => (
@@ -132,39 +143,34 @@ export default function Home() {
             )}
 
             {q.data && q.data.candidates.length > 0 && (
-              <>
-                <div className="mb-2 px-1 text-xs font-semibold text-slate-400">
-                  {q.data.candidates.length}곳을 찾았어요 · 누르면 지도로 이어져요
-                </div>
-                <ul className="space-y-2">
-                  {q.data.candidates.map((c) => (
-                    <li key={c.pnu} className="fade-up">
-                      <button
-                        onClick={() => pick(c.pnu)}
-                        className="flex w-full items-center justify-between gap-3 rounded-2xl border border-line bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md"
-                      >
-                        <AddressText jibun={c.jibunAddress} road={c.roadAddress} />
-                        <span className="flex shrink-0 items-center gap-2">
-                          <Pill>
-                            점포 {c.unitCount} · 폐업 {c.closedCount}
-                          </Pill>
-                          <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4 text-slate-300"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="m9 6 6 6-6 6" />
-                          </svg>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </>
+              <ul className="space-y-2">
+                {q.data.candidates.map((c) => (
+                  <li key={c.pnu} className="fade-up">
+                    <button
+                      onClick={() => pick(c.pnu)}
+                      className="flex w-full items-center justify-between gap-3 rounded-2xl border border-line bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md"
+                    >
+                      <AddressText jibun={c.jibunAddress} road={c.roadAddress} />
+                      <span className="flex shrink-0 items-center gap-2">
+                        <Pill>
+                          점포 {c.unitCount} · 폐업 {c.closedCount}
+                        </Pill>
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="h-4 w-4 text-slate-300"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="m9 6 6 6-6 6" />
+                        </svg>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </section>
         )}
