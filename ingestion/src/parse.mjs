@@ -6,7 +6,7 @@ import path from "node:path";
 import proj4 from "proj4";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// 원본 CSV는 용량 문제로 저장소에 커밋하지 않음 — ingestion/ 바로 아래에 두고 실행.
+// 원본 CSV는 ingestion/ 바로 아래에 커밋돼 있음.
 // 다른 데이터셋으로 재사용할 땐 이 파일명과 DONG_CODES, JIBUN_RE만 바꾸면 된다.
 const SRC_CSV = path.resolve(__dirname, "../식품_일반음식점_경기성남시_2016~.csv");
 const OUT_DIR = path.resolve(__dirname, "../out");
