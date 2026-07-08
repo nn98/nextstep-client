@@ -177,11 +177,25 @@ export default function MapPage() {
             }`}
           >
             {list.isLoading && (
-              <div className="space-y-2 p-4">
-                {[0, 1, 2].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
+              <>
+                <div className="border-b border-line px-5 py-4">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="mt-2 h-[22px] w-3/5" />
+                  <Skeleton className="mt-1.5 h-3.5 w-4/5" />
+                  <div className="mt-2.5 flex gap-2">
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                  </div>
+                </div>
+                <div className="space-y-2 p-3">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="rounded-xl border border-line bg-white px-4 py-3">
+                      <Skeleton className="h-[18px] w-2/5" />
+                      <Skeleton className="mt-1.5 h-[14px] w-4/5" />
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
 
             {list.isError && (
