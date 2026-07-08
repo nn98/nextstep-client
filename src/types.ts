@@ -18,6 +18,8 @@ export interface Disclaimer {
   note: string;
 }
 
+export type LocationSource = "license" | "sangga_api" | "overlap_inferred";
+
 export interface UnitSummary {
   unitId: string;
   label: string;
@@ -26,6 +28,8 @@ export interface UnitSummary {
   totalTenancyCount: number;
   closedCount: number;
   averageSurvivalMonths: number | null;
+  industryDetail: string | null;
+  locationSource: LocationSource;
 }
 export interface SiteDetail {
   site: {
@@ -46,14 +50,34 @@ export interface Statistics {
   longestSurvivalMonths: number | null;
   shortestSurvivalMonths: number | null;
 }
+export type EnrichmentSource = "sangga_api" | "license_only";
+
+// timeline[]의 이력 하나에 붙는 계약·주변상권 정보. sameCategoryNearbyCount만 실값
+// 시도(상가API 반경조회), 나머지는 소스가 없어 항상 목업(isPlaceholder: true).
+export interface MarketInfo {
+  isPlaceholder: boolean;
+  leaseAreaSqm: number | null;
+  depositKrw: number | null;
+  monthlyRentKrw: number | null;
+  keyMoneyKrw: number | null;
+  dailyFloatingPopulation: number | null;
+  sameCategoryNearbyCount: number | null;
+  vacancyRatePercent: number | null;
+  asOf: string;
+}
+
 export interface Tenancy {
+  tenancyId: string;
   businessName: string;
   category: string;
+  industryDetail: string | null;
   licensedAt: string;
   closedAt: string | null;
   status: "영업" | "폐업" | "휴업";
   survivalMonths: number | null;
   closedAtEstimated: boolean;
+  enrichmentSource: EnrichmentSource;
+  marketInfo: MarketInfo;
 }
 // 주변상권 분석 데이터셋(예정 스펙) — 있으면 사용, 없으면 해당 영역만 안내문으로 대체
 export interface CategoryCount {
