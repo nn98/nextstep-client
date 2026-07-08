@@ -20,12 +20,21 @@ export interface BuiltSegments {
   endLabel: string;
 }
 
-const DAY = 86_400_000;
+export const DAY = 86_400_000;
 const yr = (ms: number) => new Date(ms).getFullYear();
 const ym = (ms: number) => {
   const d = new Date(ms);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
+
+// 두 날짜(YYYY-MM-DD) 사이 개월 수(내림). 인사이트·리포트 계산에서 공용으로 사용.
+export function monthsBetween(startISO: string, endISO: string): number {
+  const s = new Date(startISO);
+  const e = new Date(endISO);
+  let months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+  if (e.getDate() < s.getDate()) months--;
+  return Math.max(0, months);
+}
 
 export function buildSegments(items: Span[], todayISO: string): BuiltSegments {
   if (items.length === 0) return { segments: [], startLabel: "", endLabel: "" };

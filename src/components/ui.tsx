@@ -1,10 +1,63 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { Disclaimer as DisclaimerT } from "../types";
 
+// 상세 페이지 등 긴 스크롤 화면에서 항상 떠 있는 뒤로/위로 버튼
+export function FloatingBackButton({ to }: { to: string }) {
+  return (
+    <Link
+      to={to}
+      aria-label="뒤로"
+      className="fixed left-4 top-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white text-ink shadow-lg transition hover:bg-slate-50 sm:left-5 sm:top-5"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+    </Link>
+  );
+}
+
+export function FloatingTopButton() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 400);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  if (!visible) return null;
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="위로"
+      className="fixed bottom-5 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white text-ink shadow-lg transition hover:bg-slate-50 sm:left-5"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="m18 15-6-6-6 6" />
+      </svg>
+    </button>
+  );
+}
+
 export function Brand({ dark = false, compact = false }: { dark?: boolean; compact?: boolean }) {
   return (
-    <Link to="/" className="flex shrink-0 items-center gap-2">
+    <Link to="/" className="flex shrink-0 items-center gap-2.5">
       <span
         className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black ${
           dark ? "bg-white text-navy" : "bg-accent text-white"
@@ -12,15 +65,21 @@ export function Brand({ dark = false, compact = false }: { dark?: boolean; compa
       >
         터
       </span>
-      <span className="flex items-baseline gap-1.5">
+      <span className="leading-tight">
         <span
-          className={`text-[15px] font-extrabold tracking-tight ${dark ? "text-white" : "text-ink"}`}
+          className={`block text-[15px] font-extrabold tracking-tight ${
+            dark ? "text-white" : "text-ink"
+          }`}
         >
           터봄
         </span>
         {!compact && (
-          <span className={`text-sm font-medium ${dark ? "text-white/50" : "text-slate-400"}`}>
-            Turbohm
+          <span
+            className={`block text-[10px] font-bold tracking-[0.22em] ${
+              dark ? "text-white/45" : "text-slate-400"
+            }`}
+          >
+            TEOBOM
           </span>
         )}
       </span>

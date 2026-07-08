@@ -111,6 +111,20 @@ export const units: Record<string, UnitDetail> = {
       { businessName: "분식왕", category: "분식", licensedAt: "2019-10-01", closedAt: "2022-12-05", status: "폐업", survivalMonths: 38, closedAtEstimated: false },
       { businessName: "치킨나라", category: "치킨", licensedAt: "2023-01-15", closedAt: null, status: "영업", survivalMonths: 41, closedAtEstimated: false },
     ],
+    neighborhood: {
+      totalStoreCount: 86,
+      sameCategoryCount: 6,
+      categoryBreakdown: [
+        { category: "한식", count: 22 },
+        { category: "치킨", count: 6 },
+        { category: "카페", count: 14 },
+        { category: "분식", count: 9 },
+        { category: "기타", count: 35 },
+      ],
+      recentOpenCount: 4,
+      radiusMeters: 300,
+      snapshotAt: "2026-07-01",
+    },
     disclaimer,
   },
   "4113310300104050001-U2": {

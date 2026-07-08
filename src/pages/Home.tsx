@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { search } from "../api/client";
 import {
@@ -99,11 +99,18 @@ function useEasedSnapScroll(ref: RefObject<HTMLDivElement | null>) {
 
 export default function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState<string | null>(null);
   // 검색 전 화면(히어로+예시+3단계)이 슬라이드로 빠지는 동안 잠깐 유지되는 상태
   const [leaving, setLeaving] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   useEasedSnapScroll(scrollRef);
+
+  // 다른 페이지에서 /#about-section 등 해시로 들어왔을 때 해당 섹션으로 즉시 이동
+  useEffect(() => {
+    if (!location.hash) return;
+    document.querySelector(location.hash)?.scrollIntoView({ behavior: "instant" });
+  }, [location.hash]);
 
   const q = useQuery({
     queryKey: ["search", query],
