@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { search } from "../api/client";
@@ -55,11 +55,55 @@ function ScrollHint({ target }: { target: string }) {
   );
 }
 
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+// 휠 스크롤만 가로채 자체 이징으로 다음/이전 화면으로 넘김(터치·키보드는 네이티브 snap 그대로).
+// 애니메이션 중 들어오는 휠 입력은 무시하고, 끝난 뒤에도 짧게 더 무시해 너무 빨리 안 넘어가게 한다.
+function useEasedSnapScroll(ref: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let busy = false;
+    const DURATION = 700;
+    const COOLDOWN = 150;
+
+    function animateTo(target: number) {
+      busy = true;
+      const startTop = el!.scrollTop;
+      const distance = target - startTop;
+      const t0 = performance.now();
+      function step(now: number) {
+        const p = Math.min(1, (now - t0) / DURATION);
+        el!.scrollTop = startTop + distance * easeInOutCubic(p);
+        if (p < 1) requestAnimationFrame(step);
+        else setTimeout(() => (busy = false), COOLDOWN);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function onWheel(e: WheelEvent) {
+      if (Math.abs(e.deltaY) < 4) return;
+      e.preventDefault();
+      if (busy) return;
+      const h = el!.clientHeight;
+      const count = el!.children.length;
+      const current = Math.round(el!.scrollTop / h);
+      const target = Math.min(count - 1, Math.max(0, current + (e.deltaY > 0 ? 1 : -1)));
+      if (target !== current) animateTo(target * h);
+    }
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [ref]);
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const [query, setQuery] = useState<string | null>(null);
   // 검색 전 화면(히어로+예시+3단계)이 슬라이드로 빠지는 동안 잠깐 유지되는 상태
   const [leaving, setLeaving] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEasedSnapScroll(scrollRef);
 
   const q = useQuery({
     queryKey: ["search", query],
@@ -84,7 +128,10 @@ export default function Home() {
   };
 
   return (
-    <div className="h-dvh snap-y snap-mandatory overflow-y-scroll scroll-smooth bg-paper">
+    <div
+      ref={scrollRef}
+      className="h-dvh snap-y snap-mandatory overflow-y-scroll scroll-smooth bg-paper"
+    >
       {/* 1/3 — 검색 화면. 뷰포트 한 화면에 맞춰 스냅 */}
       <section
         id="search-section"
