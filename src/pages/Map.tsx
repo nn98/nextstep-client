@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -56,6 +56,55 @@ function FitBounds({ points }: { points: [number, number][] }) {
     setTimeout(() => map.invalidateSize(), 0);
   }, [map, JSON.stringify(points)]);
   return null;
+}
+
+// 자리 후보 선택 — 원형 칩 대신 라디오그룹처럼 슬라이딩 하이라이트가 따라가는 세그먼트 컨트롤
+function SegmentedTabs({
+  items,
+  activeId,
+  onChange,
+}: {
+  items: { id: string; label: string }[];
+  activeId: string;
+  onChange: (id: string) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = useState<{ left: number; width: number } | null>(null);
+
+  useEffect(() => {
+    const el = containerRef.current?.querySelector<HTMLElement>(`[data-id="${CSS.escape(activeId)}"]`);
+    if (el) setThumb({ left: el.offsetLeft, width: el.offsetWidth });
+  }, [activeId, items.length]);
+
+  return (
+    <div
+      ref={containerRef}
+      role="radiogroup"
+      className="relative flex gap-1 overflow-x-auto rounded-full bg-slate-100 p-1"
+    >
+      {thumb && (
+        <span
+          aria-hidden
+          className="absolute inset-y-1 rounded-full bg-navy transition-[left,width] duration-300 ease-out"
+          style={{ left: thumb.left, width: thumb.width }}
+        />
+      )}
+      {items.map((it) => (
+        <button
+          key={it.id}
+          data-id={it.id}
+          role="radio"
+          aria-checked={it.id === activeId}
+          onClick={() => onChange(it.id)}
+          className={`relative z-10 shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+            it.id === activeId ? "text-white" : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          {it.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export default function MapPage() {
@@ -213,20 +262,15 @@ export default function MapPage() {
               <>
                 {/* 자리(후보) 선택 */}
                 {candidates.length > 1 && (
-                  <div className="flex gap-1.5 overflow-x-auto border-b border-line p-3">
-                    {candidates.map((c) => (
-                      <button
-                        key={c.pnu}
-                        onClick={() => setSelPnu(c.pnu)}
-                        className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${
-                          c.pnu === selPnu
-                            ? "bg-navy text-white"
-                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                        }`}
-                      >
-                        {c.jibunAddress.split(" ").slice(-2).join(" ")}
-                      </button>
-                    ))}
+                  <div className="border-b border-line p-3">
+                    <SegmentedTabs
+                      items={candidates.map((c) => ({
+                        id: c.pnu,
+                        label: c.jibunAddress.split(" ").slice(-2).join(" "),
+                      }))}
+                      activeId={selPnu ?? ""}
+                      onChange={setSelPnu}
+                    />
                   </div>
                 )}
 
