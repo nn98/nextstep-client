@@ -1,0 +1,12 @@
+{
+  "dataAsOf": "2026-07-08",
+  "totalRowsInFile": 9522,
+  "sujeongGuRows": 2709,
+  "excludedRows": 0,
+  "excludedByReason": {},
+  "siteCount": 1192,
+  "unitCount": 2591,
+  "tenancyCount": 2709,
+  "sitesMissingCoordinates": 29,
+  "note": "geocoded는 전부 false — VWorld API 키 없어 좌표 보강 미실행(원본 X/Y만 변환). 좌표 없는 자리는 지도 마커 제외 대상."
+}
