@@ -21,19 +21,21 @@ import {
   StatusBadge,
 } from "../components/ui";
 
-// 외부 이미지 대신 인라인 SVG 핀(깨짐 방지)
-const pinIcon = (active: boolean) =>
-  L.divIcon({
+// 외부 이미지 대신 인라인 SVG 핀(깨짐 방지). 선택된 핀만 원래 크기, 나머지는 축소.
+const pinIcon = (active: boolean) => {
+  const [w, h] = active ? [30, 40] : [21, 28];
+  return L.divIcon({
     className: "",
-    iconSize: [30, 40],
-    iconAnchor: [15, 40],
-    html: `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h],
+    html: `<svg width="${w}" height="${h}" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
       <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z" fill="${
         active ? "#16202e" : "#94a7c4"
       }" stroke="white" stroke-width="1.5"/>
       <circle cx="15" cy="15" r="5.5" fill="white"/>
     </svg>`,
   });
+};
 
 const DEFAULT_CENTER: [number, number] = [37.4013, 127.1047];
 type Located = Candidate & { latitude: number; longitude: number };
