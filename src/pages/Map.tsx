@@ -19,6 +19,7 @@ import {
   SearchBar,
   Skeleton,
   StatusBadge,
+  statusAccentStyle,
 } from "../components/ui";
 
 // 외부 이미지 대신 인라인 SVG 핀(깨짐 방지). 선택된 핀만 원래 크기, 나머지는 축소.
@@ -259,7 +260,8 @@ export default function MapPage() {
                           <li key={u.unitId}>
                             <button
                               onClick={() => coverGo(`/units/${u.unitId}`, "#0d1b2a", true)}
-                              className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line bg-white px-4 py-3 text-left transition hover:border-accent/50 hover:shadow-md"
+                              style={statusAccentStyle(u.currentStatus)}
+                              className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line border-l-4 bg-white px-4 py-3 text-left transition hover:shadow-md"
                             >
                               <span className="min-w-0">
                                 <span className="flex items-center gap-2">

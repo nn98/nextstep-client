@@ -47,23 +47,31 @@ export function Card({ className = "", children }: { className?: string; childre
   );
 }
 
-// 상태 뱃지 — 색+텍스트 병기(색만으로 구분 금지)
-function tone(label: string) {
-  if (/영업/.test(label)) return "text-emerald-700 bg-emerald-50 border-emerald-200";
-  if (/폐업|철수|종료/.test(label)) return "text-flame bg-orange-50 border-orange-200";
-  if (/휴업/.test(label)) return "text-amber-700 bg-amber-50 border-amber-200";
-  if (/추정/.test(label)) return "text-slate-500 bg-white border-slate-300";
-  return "text-slate-600 bg-slate-100 border-slate-200"; // 공실 등
+// 상태 색 — 뱃지의 점, 그리고 카드 왼쪽 아웃라인에 동일하게 사용(단일 출처)
+export function statusColor(label: string): string {
+  if (/영업/.test(label)) return "#059669"; // emerald-600
+  if (/폐업|철수|종료/.test(label)) return "#b3401e"; // flame
+  if (/휴업/.test(label)) return "#b45309"; // amber-700
+  if (/추정/.test(label)) return "#94a3b8"; // slate-400
+  return "#cbd5e1"; // 공실 등 — slate-300
 }
 
+// 상태 표기 — 둥근 뱃지 대신 컬러 점 + 텍스트(색만으로 구분 금지)
 export function StatusBadge({ label }: { label: string }) {
   return (
-    <span
-      className={`inline-block whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${tone(label)}`}
-    >
+    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ink/70">
+      <span
+        className="h-1.5 w-1.5 shrink-0 rounded-full"
+        style={{ backgroundColor: statusColor(label) }}
+      />
       {label}
     </span>
   );
+}
+
+// StatusBadge와 같은 색을 카드 왼쪽 테두리에 입히기 위한 스타일
+export function statusAccentStyle(label: string) {
+  return { borderLeftColor: statusColor(label) };
 }
 
 export function Pill({ children }: { children: ReactNode }) {
