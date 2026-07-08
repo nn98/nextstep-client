@@ -240,7 +240,10 @@ export default function MapPage() {
                   {site.isLoading ? (
                     <div className="space-y-2">
                       {[0, 1, 2].map((i) => (
-                        <Skeleton key={i} className="h-16 w-full" />
+                        <div key={i} className="rounded-xl border border-line bg-white px-4 py-3">
+                          <Skeleton className="h-[18px] w-2/5" />
+                          <Skeleton className="mt-1.5 h-[14px] w-4/5" />
+                        </div>
                       ))}
                     </div>
                   ) : site.data?.units.length === 0 ? (
