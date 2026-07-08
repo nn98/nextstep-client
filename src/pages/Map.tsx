@@ -11,16 +11,23 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import { search, featuredSites, getSite } from "../api/client";
-import type { Candidate } from "../types";
+import type { Candidate, LocationSource } from "../types";
 import {
   Brand,
   Disclaimer,
   EmptyState,
+  Pill,
   SearchBar,
   Skeleton,
   StatusBadge,
   statusAccentStyle,
 } from "../components/ui";
+
+const LOCATION_SOURCE_LABEL: Record<LocationSource, string> = {
+  license: "인허가 표기",
+  sangga_api: "상가API 매칭",
+  overlap_inferred: "추정 분리",
+};
 
 // 외부 이미지 대신 인라인 SVG 핀(깨짐 방지). 선택된 핀만 원래 크기, 나머지는 축소.
 const pinIcon = (active: boolean) => {
@@ -325,9 +332,11 @@ export default function MapPage() {
                                 <span className="flex items-center gap-2">
                                   <span className="font-bold text-ink">{u.label}</span>
                                   <StatusBadge label={u.currentStatus} />
+                                  <Pill>{LOCATION_SOURCE_LABEL[u.locationSource]}</Pill>
                                 </span>
                                 <span className="mt-0.5 block truncate text-sm text-slate-500">
-                                  {u.currentBusinessName ?? "지금은 비어 있어요"} · 가게{" "}
+                                  {u.currentBusinessName ?? "지금은 비어 있어요"}
+                                  {u.industryDetail && ` · ${u.industryDetail}`} · 가게{" "}
                                   {u.totalTenancyCount}곳 거쳐감 · 폐업 {u.closedCount}번
                                   {u.averageSurvivalMonths != null &&
                                     ` · 평균 ${u.averageSurvivalMonths}개월`}
