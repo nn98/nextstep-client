@@ -21,22 +21,22 @@ const STEPS: [string, string][] = [
 ];
 
 const REASONS: [string, string][] = [
-  ["자리 단위로 봅니다", "상권 전체 통계가 아니라, 계약서에 도장 찍기 전 그 층·호수의 기록만 봅니다."],
-  ["원본 그대로 보여드립니다", "통계로 뭉개지 않고, 인허가 데이터의 개업·폐업 이력을 시간순 그대로 옮겼습니다."],
-  ["판단은 사용자의 몫입니다", "결론을 대신 내리지 않습니다. 근거가 되는 기록만 정직하게 드립니다."],
+  ["계약 전에 확인합니다", "계약서에 서명하기 전에, 그 자리가 어떤 이력을 가지고 있는지 먼저 확인합니다. 임차 이후 알게 되는 리스크를 앞당깁니다."],
+  ["자리 단위 리포트입니다", "상권 분석이 아닌, 계약하려는 바로 그 층·호 단위의 개별 리포트입니다. 옆 호수의 성공은 이 자리의 근거가 아닙니다."],
+  ["의사결정의 근거를 남깁니다", "데이터를 나열하지 않습니다. 계약 여부를 판단할 수 있는 이력과 통계를 함께 드립니다."],
 ];
 
 const FACTS: [string, string][] = [
-  ["데이터 출처", "성남시 인허가"],
-  ["단위", "자리(PNU)·물건(호실)"],
-  ["기준", "개업·폐업 이력"],
-  ["대상", "창업예정자·신규 창업자"],
+  ["공공데이터", "인허가 기반"],
+  ["지번 단위", "동일 지번 내 전체 상가"],
+  ["층·호 단위", "상가별 개별 리포트"],
+  ["운영 이력", "폐업·생존 통계"],
 ];
 
-function ScrollHint() {
+function ScrollHint({ target }: { target: string }) {
   return (
     <a
-      href="#about-section"
+      href={target}
       className="relative z-10 flex flex-col items-center gap-1 pb-4 text-xs font-semibold text-slate-400 transition hover:text-ink"
     >
       더 알아보기
@@ -70,7 +70,7 @@ export default function Home() {
 
   return (
     <div className="h-dvh snap-y snap-mandatory overflow-y-scroll scroll-smooth bg-paper">
-      {/* 1/2 — 검색 화면. 뷰포트 한 화면에 맞춰 스냅 */}
+      {/* 1/3 — 검색 화면. 뷰포트 한 화면에 맞춰 스냅 */}
       <section
         id="search-section"
         className="relative flex h-dvh snap-start snap-always flex-col overflow-hidden"
@@ -100,17 +100,16 @@ export default function Home() {
                 <div className="fade-up">
                   <span className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-accent shadow-sm">
                     <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                    창업예정자·신규 창업자를 위한 상가 이력 조회
+                    창업예정자를 위한 입지 실사 리포트
                   </span>
                   <h1 className="mt-6 text-4xl font-black leading-[1.18] tracking-tight text-ink sm:text-5xl">
-                    이 자리, 지금까지
+                    자리를 보면,
                     <br />
-                    <span className="text-accent">몇 개의 가게</span>가 거쳐갔을까요?
+                    <span className="text-accent">창업</span>이 보입니다.
                   </h1>
                   <p className="mt-5 max-w-xl leading-relaxed text-slate-500">
-                    지번 하나로 그 자리를 거쳐간 가게들의 개업·폐업 이력, 업종 변화,
-                    평균 생존기간을 확인합니다. 권리금과 임대료 뒤에 숨은 자리의 진짜 이력 —
-                    계약서에 도장을 찍기 전에 데이터로 검증하세요.
+                    좋은 창업은, 좋은 자리를 보는 것에서 시작됩니다. 계약하려는 바로 그
+                    자리의 과거 개업·폐업 이력과 생존 통계를 분석해 드립니다.
                   </p>
                 </div>
 
@@ -130,6 +129,9 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
+                  <p className="mt-2 text-xs text-slate-400">
+                    공공데이터 기반 · 지번 주소 하나로 시작합니다
+                  </p>
                 </div>
 
                 <ol className="fade-up-delay mt-6 hidden max-w-2xl gap-3 sm:grid sm:grid-cols-3">
@@ -229,53 +231,148 @@ export default function Home() {
           </div>
         </div>
 
-        <ScrollHint />
+        <ScrollHint target="#about-section" />
       </section>
 
-      {/* 2/2 — About Us */}
+      {/* 2/3 — 왜 터봄인가 */}
       <section
         id="about-section"
-        className="relative flex min-h-dvh snap-start snap-always flex-col bg-white px-5"
+        className="relative flex min-h-dvh snap-start snap-always flex-col bg-white"
       >
-        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center py-16">
-          <a href="#search-section" className="text-xs font-semibold text-slate-400 hover:text-ink">
-            ↑ 다시 검색하기
-          </a>
-          <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-md border border-line bg-paper px-3 py-1.5 text-xs font-bold text-accent">
-            About 넥스트스텝
-          </span>
-          <h2 className="mt-5 text-3xl font-black leading-[1.25] tracking-tight text-ink sm:text-4xl">
-            숫자가 아니라,
-            <br />이 자리가 겪어온 일을 보여드립니다.
-          </h2>
-          <p className="mt-4 max-w-xl leading-relaxed text-slate-500">
-            넥스트스텝은 상권 통계 서비스가 아닙니다. 계약하려는 바로 그 자리 — 지번, 층,
-            호수 단위로 어떤 가게가 얼마나 있다 나갔는지, 성남시 공공 인허가 기록을 정제해
-            그대로 옮겨왔습니다.
-          </p>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5">
+          <div className="mx-auto w-full max-w-3xl py-10">
+            <a href="#search-section" className="text-xs font-semibold text-slate-400 hover:text-ink">
+              ↑ 다시 검색하기
+            </a>
+            <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-md border border-line bg-paper px-3 py-1.5 text-xs font-bold text-accent">
+              왜 터봄인가
+            </span>
+            <h2 className="mt-5 text-3xl font-black leading-[1.25] tracking-tight text-ink sm:text-4xl">
+              상권을 보기 전에,
+              <br />
+              자리를 봅니다.
+            </h2>
+            <p className="mt-4 max-w-xl leading-relaxed text-slate-500">
+              터봄은 상권 통계 서비스가 아닙니다. 계약하려는 바로 그 자리 — 지번, 층,
+              호수 단위로 어떤 가게가 얼마나 있다 나갔는지, 성남시 공공 인허가 기록을
+              정제해 그대로 옮겨왔습니다.
+            </p>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            {REASONS.map(([title, desc], i) => (
-              <div key={title} className="rounded-2xl border border-line bg-paper p-4">
-                <span className="text-xs font-bold text-slate-400">0{i + 1}</span>
-                <div className="mt-2 font-bold text-ink">{title}</div>
-                <div className="mt-1 text-sm leading-relaxed text-slate-500">{desc}</div>
-              </div>
-            ))}
-          </div>
+            <div className="mt-8 flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
+              {REASONS.map(([title, desc], i) => (
+                <div
+                  key={title}
+                  className="w-64 shrink-0 rounded-2xl border border-line bg-paper p-4 sm:w-auto"
+                >
+                  <span className="text-xs font-bold text-slate-400">0{i + 1}</span>
+                  <div className="mt-2 font-bold text-ink">{title}</div>
+                  <div className="mt-1 text-sm leading-relaxed text-slate-500">{desc}</div>
+                </div>
+              ))}
+            </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-4">
-            {FACTS.map(([label, value]) => (
-              <div key={label} className="bg-white p-4">
-                <div className="text-xs text-slate-400">{label}</div>
-                <div className="mt-1 font-bold text-ink">{value}</div>
-              </div>
-            ))}
+            <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-4">
+              {FACTS.map(([label, value]) => (
+                <div key={label} className="bg-white p-4">
+                  <div className="text-xs text-slate-400">{label}</div>
+                  <div className="mt-1 font-bold text-ink">{value}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <footer className="mx-auto w-full max-w-3xl pb-6 text-center text-xs text-slate-400">
-          인허가 신고 기준 데이터로 실제 영업 현황과 차이가 있을 수 있습니다.
+        <ScrollHint target="#report-section" />
+      </section>
+
+      {/* 3/3 — 분석 리포트 미리보기 + CTA */}
+      <section
+        id="report-section"
+        className="relative flex min-h-dvh snap-start snap-always flex-col bg-paper"
+      >
+        <div className="min-h-0 flex-1 overflow-y-auto px-5">
+          <div className="mx-auto w-full max-w-3xl py-4">
+            <span className="inline-flex w-fit items-center gap-2 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-accent">
+              분석 리포트 미리보기
+            </span>
+            <h2 className="mt-3 text-2xl font-black leading-[1.25] tracking-tight text-ink sm:text-3xl">
+              데이터가 아니라,
+              <br />
+              판단 근거를 드립니다.
+            </h2>
+            <p className="mt-2.5 max-w-xl leading-relaxed text-slate-500">
+              5초 안에 "이 자리를 계약해도 괜찮을까?"에 답할 수 있도록, 이력과 통계를
+              한 화면에 정리해 드립니다.
+            </p>
+
+            {/* 샘플 리포트 카드 — 실제 물건 상세 화면과 같은 항목 구성 */}
+            <div className="mt-5 max-w-md rounded-2xl border border-line bg-white p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-teal">
+                  <span className="h-1.5 w-1.5 rounded-full bg-teal" />
+                  분석 리포트 · 미리보기
+                </span>
+                <span className="rounded-full border border-line px-2 py-0.5 text-[10px] font-bold text-slate-400">
+                  SAMPLE
+                </span>
+              </div>
+              <div className="mt-3 text-xs text-slate-400">경기도 성남시 수정구 시흥동 85-5</div>
+              <div className="text-base font-black text-ink">1층 101호 · 상가 리포트</div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-paper p-3">
+                  <div className="text-[11px] text-slate-400">거쳐간 가게</div>
+                  <div className="text-lg font-black text-ink">5곳</div>
+                </div>
+                <div className="rounded-xl bg-paper p-3">
+                  <div className="text-[11px] text-slate-400">폐업</div>
+                  <div className="text-lg font-black text-flame">4회</div>
+                </div>
+                <div className="rounded-xl bg-paper p-3">
+                  <div className="text-[11px] text-slate-400">평균 생존기간</div>
+                  <div className="text-lg font-black text-ink">27개월</div>
+                </div>
+                <div className="rounded-xl bg-paper p-3">
+                  <div className="text-[11px] text-slate-400">현재 업종</div>
+                  <div className="text-lg font-black text-emerald-600">치킨나라</div>
+                </div>
+              </div>
+              <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-800">
+                <span className="font-bold">치킨나라가 2023년 개업 후 지금까지 이어지고 있어요.</span>{" "}
+                이전 업종들의 생존기간도 함께 확인해 보세요.
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col items-start gap-4 rounded-2xl bg-navy p-5 text-white sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-lg font-black">계약 전에, 자리를 먼저 보세요.</div>
+                <p className="mt-1 text-sm text-white/60">
+                  지번 주소 하나로 시작합니다. 층·호 단위 상가별 리포트를 확인하세요.
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <a
+                  href="#search-section"
+                  className="rounded-full bg-white px-4 py-2 text-sm font-bold text-navy transition hover:brightness-95"
+                >
+                  자리 분석하기
+                </a>
+                <Link
+                  to="/map"
+                  className="rounded-full border border-white/30 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/10"
+                >
+                  지도 둘러보기
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer className="mx-auto flex w-full max-w-3xl flex-col items-center gap-1.5 px-5 pb-4 text-center">
+          <Brand compact />
+          <p className="text-xs text-slate-400">© 2026 터봄 · 계약 전, 자리를 봅니다.</p>
+          <p className="text-xs text-slate-400">
+            인허가 신고 기준 데이터로 실제 영업 현황과 차이가 있을 수 있습니다.
+          </p>
         </footer>
       </section>
     </div>
