@@ -73,17 +73,19 @@ export default function Home() {
 
         <div className="fade-up-delay mt-8 max-w-xl">
           <SearchBar onSearch={(v) => v && setQuery(v)} />
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-slate-400">예시</span>
-            {CHIPS.map((c) => (
-              <button
-                key={c}
-                onClick={() => setQuery(c)}
-                className="rounded-full border border-line bg-white px-3.5 py-1.5 text-sm text-slate-600 transition hover:border-accent/50 hover:text-accent"
-              >
-                {c}
-              </button>
-            ))}
+          <div className="mt-3 flex items-center gap-2">
+            <span className="shrink-0 text-xs text-slate-400">예시</span>
+            <div className="flex overflow-x-auto divide-x divide-line rounded-full border border-line bg-white">
+              {CHIPS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setQuery(c)}
+                  className="shrink-0 whitespace-nowrap px-3.5 py-1.5 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-accent"
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -381,11 +381,11 @@ export default function Unit() {
               </div>
 
               {/* 범례 — 업종 종류 */}
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 inline-flex max-w-full divide-x divide-line overflow-x-auto rounded-full border border-line bg-white shadow-[0_1px_5px_rgba(13,27,42,0.13)]">
                 {Object.entries(colors).map(([cat, color]) => (
                   <span
                     key={cat}
-                    className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-600 shadow-[0_1px_5px_rgba(13,27,42,0.13)]"
+                    className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3.5 py-1.5 text-sm font-semibold text-slate-600"
                   >
                     <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
                     {cat}
