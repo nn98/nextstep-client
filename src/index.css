@@ -61,7 +61,7 @@ body {
   animation: page-fade 0.3s ease-out both;
 }
 
-/* 화면을 살며시 덮는 베일 전환 */
+/* 화면을 살며시 덮는 베일 전환(맵→홈 등) */
 @keyframes cover-veil {
   from {
     opacity: 0;
@@ -72,6 +72,19 @@ body {
 }
 .cover-expand {
   animation: cover-veil 0.32s ease-out both;
+}
+
+/* 아래에서 밀어 올려 덮는 슬라이드 전환(맵→상세) */
+@keyframes cover-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.cover-slide {
+  animation: cover-slide-up 0.34s cubic-bezier(0.33, 0, 0.15, 1) both;
 }
 
 /* 매트릭스 그리드 배경 */

@@ -97,7 +97,17 @@ function TimelineBar({
           </div>
         )}
 
-        <div className="flex h-20 w-full overflow-hidden rounded-xl border border-line shadow-[0_2px_12px_rgba(13,27,42,0.08)]">
+        <div className="relative flex h-20 w-full overflow-hidden rounded-xl border border-line shadow-[0_2px_12px_rgba(13,27,42,0.08)]">
+          {/* 포인터를 따라오는 스포트라이트 음영 */}
+          {hover && (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 z-[15] w-full"
+              style={{
+                background: `radial-gradient(150px 90px at ${hover.x}px 50%, rgba(255,255,255,0.28), rgba(13,27,42,0.14) 62%, transparent 78%)`,
+              }}
+            />
+          )}
           {segments.map((s, i) =>
             s.kind === "vacancy" ? (
               <div
@@ -116,10 +126,10 @@ function TimelineBar({
                   width: `${s.widthPct}%`,
                   backgroundColor: colors[timeline[s.idx].category],
                 }}
-                className={`relative flex flex-col items-center justify-center overflow-hidden border-l border-white/70 px-1 text-white transition-[opacity,filter] duration-150 ${
+                className={`relative flex flex-col items-center justify-center overflow-hidden border-l border-white/70 px-1 text-white transition-[opacity] duration-200 ${
                   s.idx === selected
-                    ? "brightness-110"
-                    : "opacity-90 hover:opacity-100 hover:brightness-110"
+                    ? "z-10 opacity-100"
+                    : "opacity-45 hover:opacity-80"
                 }`}
               >
                 {s.widthPct > 8 && (
@@ -135,12 +145,13 @@ function TimelineBar({
                 {s.ongoing && (
                   <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-white" />
                 )}
-                {/* 흰색→업종 파스텔 그라데이션 하단선 */}
+                {/* 흰색→업종 파스텔 그라데이션 하단선(선택 시 더 두껍게) */}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px]"
+                  className="pointer-events-none absolute inset-x-0 bottom-0"
                   style={{
-                    background: `linear-gradient(90deg, rgba(255,255,255,0.9), color-mix(in srgb, ${colors[timeline[s.idx].category]} 55%, white))`,
+                    height: s.idx === selected ? 6 : 4,
+                    background: `linear-gradient(90deg, rgba(255,255,255,0.95), color-mix(in srgb, ${colors[timeline[s.idx].category]} 62%, white))`,
                   }}
                 />
               </button>
@@ -374,7 +385,7 @@ export default function Unit() {
                 {Object.entries(colors).map(([cat, color]) => (
                   <span
                     key={cat}
-                    className="flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-sm font-semibold text-slate-600"
+                    className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-600 shadow-[0_1px_5px_rgba(13,27,42,0.13)]"
                   >
                     <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
                     {cat}

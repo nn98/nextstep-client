@@ -62,11 +62,11 @@ export default function MapPage() {
   const navigate = useNavigate();
   const [selPnu, setSelPnu] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
-  // 베일이 살며시 덮인 뒤 이동하는 전환
-  const [cover, setCover] = useState<string | null>(null);
-  const coverGo = (to: string, c: string) => {
-    setCover(c);
-    setTimeout(() => navigate(to), 260);
+  // 커버가 화면을 덮은 뒤 이동. slide=아래에서 밀어 올림(→상세), 그 외 페이드(→홈)
+  const [cover, setCover] = useState<{ color: string; slide: boolean } | null>(null);
+  const coverGo = (to: string, color: string, slide: boolean) => {
+    setCover({ color, slide });
+    setTimeout(() => navigate(to), slide ? 300 : 240);
   };
 
   const list = useQuery({
@@ -140,7 +140,7 @@ export default function MapPage() {
             onClickCapture={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              coverGo("/", "#f6f7f9");
+              coverGo("/", "#f6f7f9", false);
             }}
             className="cursor-pointer rounded-2xl bg-white/90 px-3 py-2 shadow-lg backdrop-blur transition hover:shadow-xl"
           >
@@ -253,7 +253,7 @@ export default function MapPage() {
                         .map((u) => (
                           <li key={u.unitId}>
                             <button
-                              onClick={() => coverGo(`/units/${u.unitId}`, "#0d1b2a")}
+                              onClick={() => coverGo(`/units/${u.unitId}`, "#0d1b2a", true)}
                               className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line bg-white px-4 py-3 text-left transition hover:border-accent/50 hover:shadow-md"
                             >
                               <span className="min-w-0">
@@ -317,11 +317,11 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* 커버 베일 오버레이 */}
+      {/* 커버 전환 오버레이 */}
       {cover && (
         <div
-          className="cover-expand fixed inset-0 z-[2000]"
-          style={{ backgroundColor: cover }}
+          className={`fixed inset-0 z-[2000] ${cover.slide ? "cover-slide" : "cover-expand"}`}
+          style={{ backgroundColor: cover.color }}
         />
       )}
     </div>

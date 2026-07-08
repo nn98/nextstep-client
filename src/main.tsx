@@ -11,11 +11,12 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
 });
 
-// 라우트가 바뀔 때마다 key가 바뀌어 페이드 전환
+// 상세는 맵에서 슬라이드 커버로 진입(즉시 교체) — 그 외는 페이드
 function AnimatedRoutes() {
   const location = useLocation();
+  const isDetail = location.pathname.startsWith("/units/");
   return (
-    <div key={location.pathname} className="page-enter">
+    <div key={location.pathname} className={isDetail ? "" : "page-enter"}>
       <Routes location={location}>
         <Route path="/" element={<Home />} />
         <Route path="/map" element={<MapPage />} />
