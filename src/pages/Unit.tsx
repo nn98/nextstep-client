@@ -104,7 +104,7 @@ function TimelineBar({
               aria-hidden
               className="pointer-events-none absolute inset-y-0 z-[15] w-full"
               style={{
-                background: `radial-gradient(150px 90px at ${hover.x}px 50%, rgba(255,255,255,0.28), rgba(13,27,42,0.14) 62%, transparent 78%)`,
+                background: `radial-gradient(150px 90px at ${hover.x}px 50%, rgba(255,255,255,0.14), rgba(13,27,42,0.07) 62%, transparent 78%)`,
               }}
             />
           )}
@@ -129,7 +129,7 @@ function TimelineBar({
                 className={`relative flex flex-col items-center justify-center overflow-hidden border-l border-white/70 px-1 text-white transition-[opacity] duration-200 ${
                   s.idx === selected
                     ? "z-10 opacity-100"
-                    : "opacity-45 hover:opacity-80"
+                    : "opacity-55 hover:opacity-70"
                 }`}
               >
                 {s.widthPct > 8 && (
