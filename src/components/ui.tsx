@@ -4,34 +4,23 @@ import type { Disclaimer as DisclaimerT } from "../types";
 
 export function Brand({ dark = false, compact = false }: { dark?: boolean; compact?: boolean }) {
   return (
-    <Link to="/" className="flex shrink-0 items-center gap-2.5">
+    <Link to="/" className="flex shrink-0 items-center gap-2">
       <span
         className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black ${
-          dark ? "bg-white text-navy" : "bg-ink text-white"
+          dark ? "bg-white text-navy" : "bg-accent text-white"
         }`}
       >
-        N
+        터
       </span>
-      <span className="leading-tight">
+      <span className="flex items-baseline gap-1.5">
         <span
-          className={`block text-[15px] font-extrabold tracking-tight ${
-            dark ? "text-white" : "text-ink"
-          }`}
+          className={`text-[15px] font-extrabold tracking-tight ${dark ? "text-white" : "text-ink"}`}
         >
-          넥스트스텝{" "}
-          {!compact && (
-            <span className={`font-medium ${dark ? "text-white/60" : "text-slate-500"}`}>
-              상가이력 조회
-            </span>
-          )}
+          터봄
         </span>
         {!compact && (
-          <span
-            className={`block text-[9px] font-semibold tracking-[0.18em] ${
-              dark ? "text-white/40" : "text-slate-400"
-            }`}
-          >
-            NEXT STEP · STOREFRONT HISTORY
+          <span className={`text-sm font-medium ${dark ? "text-white/50" : "text-slate-400"}`}>
+            Turbohm
           </span>
         )}
       </span>
