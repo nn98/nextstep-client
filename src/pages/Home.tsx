@@ -58,6 +58,8 @@ function ScrollHint({ target }: { target: string }) {
 export default function Home() {
   const navigate = useNavigate();
   const [query, setQuery] = useState<string | null>(null);
+  // 검색 전 화면(히어로+예시+3단계)이 슬라이드로 빠지는 동안 잠깐 유지되는 상태
+  const [leaving, setLeaving] = useState(false);
 
   const q = useQuery({
     queryKey: ["search", query],
@@ -67,6 +69,19 @@ export default function Home() {
 
   const pick = (pnu: string) =>
     navigate(`/map?q=${encodeURIComponent(query ?? "")}&pnu=${pnu}`);
+
+  const submit = (v: string) => {
+    if (!v) return;
+    if (query === null) {
+      setLeaving(true);
+      setTimeout(() => {
+        setQuery(v);
+        setLeaving(false);
+      }, 220);
+    } else {
+      setQuery(v);
+    }
+  };
 
   return (
     <div className="h-dvh snap-y snap-mandatory overflow-y-scroll scroll-smooth bg-paper">
@@ -96,7 +111,11 @@ export default function Home() {
         <div className="relative z-10 min-h-0 flex-1 overflow-y-auto px-5">
           <div className="mx-auto w-full max-w-3xl py-5 sm:py-7">
             {query === null ? (
-              <>
+              <div
+                className={`transition-all duration-200 ease-in ${
+                  leaving ? "-translate-y-4 opacity-0" : "translate-y-0 opacity-100"
+                }`}
+              >
                 <div className="fade-up">
                   <span className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-accent shadow-sm">
                     <span className="h-1.5 w-1.5 rounded-full bg-accent" />
@@ -114,14 +133,14 @@ export default function Home() {
                 </div>
 
                 <div className="fade-up-delay mt-8 max-w-xl">
-                  <SearchBar onSearch={(v) => v && setQuery(v)} />
+                  <SearchBar onSearch={submit} />
                   <div className="mt-3 flex items-center gap-2">
                     <span className="shrink-0 text-xs text-slate-400">예시</span>
                     <div className="flex overflow-x-auto divide-x divide-line rounded-full border border-line bg-white">
                       {CHIPS.map((c) => (
                         <button
                           key={c}
-                          onClick={() => setQuery(c)}
+                          onClick={() => submit(c)}
                           className="shrink-0 whitespace-nowrap px-3.5 py-1.5 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-accent"
                         >
                           {c}
@@ -145,9 +164,9 @@ export default function Home() {
                     </li>
                   ))}
                 </ol>
-              </>
+              </div>
             ) : (
-              <div className="max-w-xl">
+              <div className="fade-up max-w-xl">
                 <div className="fade-up flex items-center justify-between gap-3">
                   <h2 className="text-2xl font-black tracking-tight text-ink">검색 결과</h2>
                   <button
@@ -159,7 +178,7 @@ export default function Home() {
                 </div>
 
                 <div className="fade-up-delay mt-4">
-                  <SearchBar initial={query} size="md" onSearch={(v) => v && setQuery(v)} />
+                  <SearchBar initial={query} size="md" onSearch={submit} />
                 </div>
 
                 {/* 안내문 자리를 미리 확보 — 로딩→결과 전환 시 아래 목록이 밀리지 않도록 */}
