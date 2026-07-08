@@ -29,8 +29,8 @@ const pinIcon = (active: boolean) =>
     iconAnchor: [15, 40],
     html: `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
       <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z" fill="${
-        active ? "#16202e" : "#94a7c4"
-      }" stroke="white" stroke-width="1.5"/>
+        active ? "#1f2422" : "#a39c86"
+      }" stroke="#efede3" stroke-width="1.5"/>
       <circle cx="15" cy="15" r="5.5" fill="white"/>
     </svg>`,
   });
@@ -140,9 +140,9 @@ export default function MapPage() {
             onClickCapture={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              coverGo("/", "#f6f7f9", false);
+              coverGo("/", "#efede3", false);
             }}
-            className="cursor-pointer rounded-2xl bg-white/90 px-3 py-2 shadow-lg backdrop-blur transition hover:shadow-xl"
+            className="cursor-pointer border border-ledger bg-paper/95 px-3 py-2 shadow-sm transition hover:border-ink"
           >
             <Brand compact />
           </div>
@@ -167,7 +167,7 @@ export default function MapPage() {
                   }
                 : undefined
             }
-            className={`pointer-events-auto mt-auto flex max-h-[58dvh] w-full flex-col overflow-hidden rounded-2xl bg-white/95 shadow-2xl backdrop-blur transition-transform duration-300 ease-out sm:mt-0 sm:max-h-full sm:w-[420px] ${
+            className={`pointer-events-auto mt-auto flex max-h-[58dvh] w-full flex-col overflow-hidden border border-ledger bg-paper/95 shadow-sm transition-transform duration-300 ease-out sm:mt-0 sm:max-h-full sm:w-[420px] ${
               collapsed
                 ? "translate-y-[calc(100%-18px)] cursor-pointer sm:-translate-x-[calc(100%-18px)] sm:translate-y-0"
                 : ""
@@ -196,15 +196,15 @@ export default function MapPage() {
               <>
                 {/* 자리(후보) 선택 */}
                 {candidates.length > 1 && (
-                  <div className="flex gap-1.5 overflow-x-auto border-b border-line p-3">
+                  <div className="flex gap-1.5 overflow-x-auto border-b border-ledger p-3">
                     {candidates.map((c) => (
                       <button
                         key={c.pnu}
                         onClick={() => setSelPnu(c.pnu)}
-                        className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${
+                        className={`shrink-0 border px-3.5 py-1.5 font-mono text-xs font-medium transition ${
                           c.pnu === selPnu
-                            ? "bg-navy text-white"
-                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                            ? "border-ink bg-ink text-paper"
+                            : "border-ledger bg-white/60 text-ink/55 hover:border-ink/50"
                         }`}
                       >
                         {c.jibunAddress.split(" ").slice(-2).join(" ")}
@@ -214,19 +214,19 @@ export default function MapPage() {
                 )}
 
                 {/* 선택된 자리 요약 */}
-                <div className="border-b border-line px-5 py-4">
-                  <div className="text-xs font-semibold text-slate-400">지금 보고 있는 자리</div>
-                  <div className="mt-1 truncate text-lg font-extrabold text-ink">
+                <div className="border-b border-ledger px-5 py-4">
+                  <div className="font-mono text-[11px] tracking-wide text-ink/40">지금 보고 있는 자리</div>
+                  <div className="mt-1 truncate font-display text-lg font-bold text-ink">
                     {selected?.jibunAddress}
                   </div>
-                  <div className="mt-0.5 truncate text-sm text-slate-500">
+                  <div className="mt-0.5 truncate font-mono text-xs text-ink/45">
                     {selected?.roadAddress}
                   </div>
-                  <div className="mt-2 flex gap-2 text-xs font-semibold">
-                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">
+                  <div className="mt-2 flex gap-2 font-mono text-xs">
+                    <span className="border border-ledger px-2.5 py-1 text-ink/55">
                       점포 {selected?.unitCount}개
                     </span>
-                    <span className="rounded-full bg-orange-50 px-2.5 py-1 text-flame">
+                    <span className="border border-closed/40 px-2.5 py-1 text-closed">
                       폐업 이력 {selected?.closedCount}건
                     </span>
                   </div>
@@ -234,7 +234,7 @@ export default function MapPage() {
 
                 {/* 물건 목록 */}
                 <div className="min-h-0 flex-1 overflow-y-auto p-3">
-                  <div className="px-2 pb-2 text-xs font-semibold text-slate-400">
+                  <div className="px-2 pb-2 font-mono text-[11px] text-ink/40">
                     궁금한 점포를 누르면 히스토리가 열려요
                   </div>
                   {site.isLoading ? (
@@ -253,15 +253,15 @@ export default function MapPage() {
                         .map((u) => (
                           <li key={u.unitId}>
                             <button
-                              onClick={() => coverGo(`/units/${u.unitId}`, "#0d1b2a", true)}
-                              className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border border-line bg-white px-4 py-3 text-left transition hover:border-accent/50 hover:shadow-md"
+                              onClick={() => coverGo(`/units/${u.unitId}`, "#1f2422", true)}
+                              className="grid w-full grid-cols-[1fr_auto] items-center gap-x-3 border border-ledger bg-white/50 px-4 py-3 text-left transition hover:border-ink"
                             >
                               <span className="min-w-0">
                                 <span className="flex items-center gap-2">
-                                  <span className="font-bold text-ink">{u.label}</span>
+                                  <span className="font-display font-bold text-ink">{u.label}</span>
                                   <StatusBadge label={u.currentStatus} />
                                 </span>
-                                <span className="mt-0.5 block truncate text-sm text-slate-500">
+                                <span className="mt-0.5 block truncate text-sm text-ink/50">
                                   {u.currentBusinessName ?? "지금은 비어 있어요"} · 가게{" "}
                                   {u.totalTenancyCount}곳 거쳐감 · 폐업 {u.closedCount}번
                                   {u.averageSurvivalMonths != null &&
@@ -270,7 +270,7 @@ export default function MapPage() {
                               </span>
                               <svg
                                 viewBox="0 0 24 24"
-                                className="h-4 w-4 text-slate-300"
+                                className="h-4 w-4 text-ink/25"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="2"
@@ -287,7 +287,7 @@ export default function MapPage() {
                 </div>
 
                 {site.data && (
-                  <div className="border-t border-line px-5 py-3">
+                  <div className="border-t border-ledger px-5 py-3">
                     <Disclaimer disclaimer={site.data.disclaimer} />
                   </div>
                 )}
@@ -300,7 +300,7 @@ export default function MapPage() {
         {collapsed && (
           <button
             onClick={() => setCollapsed(false)}
-            className="fade-up pointer-events-auto absolute bottom-6 left-4 flex items-center gap-2 rounded-full bg-navy px-4 py-2.5 text-sm font-bold text-white shadow-xl transition hover:bg-navy-600 sm:left-5"
+            className="fade-up pointer-events-auto absolute bottom-6 left-4 flex items-center gap-2 border border-ink bg-ink px-4 py-2.5 font-mono text-sm font-medium text-paper shadow-sm transition hover:bg-stamp-navy hover:border-stamp-navy sm:left-5"
           >
             <svg
               viewBox="0 0 24 24"

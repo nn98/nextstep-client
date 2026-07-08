@@ -7,9 +7,12 @@ import { buildSegments, categoryColors, yearTicks } from "../lib/timeline";
 import {
   Brand,
   Card,
+  DocHeader,
   Disclaimer,
   EmptyState,
   ErrorState,
+  LedgerSection,
+  Seal,
   Skeleton,
   Stat,
   StatusBadge,
@@ -19,6 +22,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
 const ym = (d: string) => d.slice(0, 7).replace("-", ".");
 const period = (t: Tenancy) =>
   t.closedAt ? `${ym(t.licensedAt)} – ${ym(t.closedAt)}` : `${ym(t.licensedAt)} – 현재`;
+const docNo = (unitId: string) => `NX-${unitId.replace(/[^0-9]/g, "").slice(-10)}`;
 
 // ponytail: 계약·주변상권 정보는 API 미제공 — 데모용 예시값(가게 인덱스 기반 고정)
 function mockExtras(i: number) {
@@ -36,8 +40,8 @@ function mockExtras(i: number) {
 
 function InfoRow({ k, v }: { k: string; v: ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 text-sm">
-      <dt className="shrink-0 text-slate-400">{k}</dt>
+    <div className="flex items-baseline justify-between gap-3 border-b border-ledger-soft py-1.5 text-sm last:border-0">
+      <dt className="shrink-0 text-ink/45">{k}</dt>
       <dd className="text-right font-semibold text-ink">{v}</dd>
     </div>
   );
@@ -80,15 +84,11 @@ function TimelineBar({
 
   return (
     <div>
-      <div
-        className="relative"
-        onMouseMove={handleMove}
-        onMouseLeave={() => setHover(null)}
-      >
+      <div className="relative" onMouseMove={handleMove} onMouseLeave={() => setHover(null)}>
         {/* 포인터를 따라 흐르는 툴팁 */}
         {hover && (
           <div
-            className="pointer-events-none absolute -top-9 z-20 -translate-x-1/2 whitespace-nowrap rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-[left] duration-100 ease-out"
+            className="pointer-events-none absolute -top-9 z-20 -translate-x-1/2 whitespace-nowrap border border-ink bg-ink px-3 py-1.5 font-mono text-xs text-paper transition-[left] duration-100 ease-out"
             style={{ left: hover.x }}
           >
             {hoverT
@@ -97,14 +97,14 @@ function TimelineBar({
           </div>
         )}
 
-        <div className="relative flex h-20 w-full overflow-hidden rounded-xl border border-line shadow-[0_2px_12px_rgba(13,27,42,0.08)]">
+        <div className="relative flex h-20 w-full overflow-hidden border border-ledger">
           {/* 포인터를 따라오는 스포트라이트 음영 */}
           {hover && (
             <span
               aria-hidden
               className="pointer-events-none absolute inset-y-0 z-[15] w-full"
               style={{
-                background: `radial-gradient(150px 90px at ${hover.x}px 50%, rgba(255,255,255,0.14), rgba(13,27,42,0.07) 62%, transparent 78%)`,
+                background: `radial-gradient(150px 90px at ${hover.x}px 50%, rgba(255,255,255,0.14), rgba(31,36,34,0.07) 62%, transparent 78%)`,
               }}
             />
           )}
@@ -113,7 +113,7 @@ function TimelineBar({
               <div
                 key={i}
                 style={{ width: `${s.widthPct}%` }}
-                className="hatch flex items-center justify-center border-l border-white text-[11px] font-semibold text-slate-400"
+                className="hatch flex items-center justify-center border-l border-paper text-[11px] font-semibold text-ink/40"
               >
                 {s.widthPct > 6 && "공실"}
               </div>
@@ -126,10 +126,8 @@ function TimelineBar({
                   width: `${s.widthPct}%`,
                   backgroundColor: colors[timeline[s.idx].category],
                 }}
-                className={`relative flex flex-col items-center justify-center overflow-hidden border-l border-white/70 px-1 text-white transition-[opacity] duration-200 ${
-                  s.idx === selected
-                    ? "z-10 opacity-100"
-                    : "opacity-55 hover:opacity-70"
+                className={`relative flex flex-col items-center justify-center overflow-hidden border-l border-paper/70 px-1 text-paper transition-[opacity] duration-200 ${
+                  s.idx === selected ? "z-10 opacity-100" : "opacity-55 hover:opacity-70"
                 }`}
               >
                 {s.widthPct > 8 && (
@@ -137,13 +135,13 @@ function TimelineBar({
                     <span className="w-full truncate text-center text-xs font-bold">
                       {timeline[s.idx].businessName}
                     </span>
-                    <span className="text-[10px] text-white/80">
+                    <span className="text-[10px] text-paper/80">
                       {timeline[s.idx].survivalMonths ?? "-"}개월
                     </span>
                   </>
                 )}
                 {s.ongoing && (
-                  <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-white" />
+                  <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-paper" />
                 )}
                 {/* 흰색→업종 파스텔 그라데이션 하단선(선택 시 더 두껍게) */}
                 <span
@@ -162,16 +160,16 @@ function TimelineBar({
 
       {/* 하단 연도 축 */}
       <div className="relative mt-2 h-6">
-        <div className="absolute inset-x-0 top-1 h-px bg-line" />
+        <div className="absolute inset-x-0 top-1 h-px bg-ledger" />
         {ticks.map((t, i) => (
           <div
             key={t.year}
             className="absolute top-0 flex -translate-x-1/2 flex-col items-center"
             style={{ left: `${t.leftPct}%` }}
           >
-            <span className="h-2 w-2 rounded-full bg-slate-300" />
+            <span className="h-1.5 w-1.5 bg-ink/30" />
             {(!thin || i % 2 === 0) && (
-              <span className="mt-1 text-[10px] tabular-nums text-slate-400">{t.year}</span>
+              <span className="mt-1 font-mono text-[10px] tabular-nums text-ink/40">{t.year}</span>
             )}
           </div>
         ))}
@@ -180,9 +178,10 @@ function TimelineBar({
   );
 }
 
-// 세부 입점 기록 한 줄: 기간·가게·생존 막대
+// 갑구 순위 목록 한 줄: 기간·가게·생존 막대
 function RecordRow({
   t,
+  rank,
   color,
   maxMonths,
   isLast,
@@ -190,6 +189,7 @@ function RecordRow({
   onSelect,
 }: {
   t: Tenancy;
+  rank: number;
   color: string;
   maxMonths: number;
   isLast: boolean;
@@ -198,43 +198,39 @@ function RecordRow({
 }) {
   const pct = Math.max(4, ((t.survivalMonths ?? 0) / maxMonths) * 100);
   return (
-    <li className="relative pl-7">
-      {/* 타임라인 세로선·점 */}
-      {!isLast && <span className="absolute left-[7px] top-6 h-full w-px bg-line" />}
+    <li className="relative pl-9">
+      {!isLast && <span className="absolute left-[9px] top-7 h-full w-px bg-ledger" />}
       <span
-        className="absolute left-0 top-4 h-4 w-4 rounded-full border-4 border-white shadow"
+        className="absolute left-0 top-3.5 flex h-[18px] w-[18px] items-center justify-center border border-paper font-mono text-[9px] font-bold text-paper"
         style={{ backgroundColor: color }}
-      />
+      >
+        {rank}
+      </span>
       <button
         onClick={onSelect}
-        className={`mb-2 w-full rounded-xl border px-4 py-3 text-left transition ${
-          selected
-            ? "border-navy/30 bg-slate-50 shadow-sm"
-            : "border-line bg-white hover:bg-slate-50"
+        className={`mb-2 w-full border px-4 py-3 text-left transition ${
+          selected ? "border-ink bg-ink/[0.03]" : "border-ledger bg-white/40 hover:bg-ink/[0.02]"
         }`}
       >
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate font-bold text-ink">{t.businessName}</span>
-            <span className="shrink-0 text-sm text-slate-400">{t.category}</span>
+            <span className="truncate font-display font-bold text-ink">{t.businessName}</span>
+            <span className="shrink-0 text-sm text-ink/40">{t.category}</span>
           </span>
           <span className="flex shrink-0 items-center gap-1.5">
             {t.closedAtEstimated && <StatusBadge label="폐업일 추정" />}
             <StatusBadge label={t.status} />
           </span>
         </div>
-        <div className="mt-1 text-sm font-semibold tabular-nums text-slate-500">
+        <div className="mt-1 font-mono text-sm font-semibold tabular-nums text-ink/55">
           {period(t)}
         </div>
         {/* 생존개월 가로 막대 */}
         <div className="mt-2 flex items-center gap-2">
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full"
-              style={{ width: `${pct}%`, backgroundColor: color }}
-            />
+          <div className="h-1.5 flex-1 overflow-hidden bg-ink/10">
+            <div className="h-full" style={{ width: `${pct}%`, backgroundColor: color }} />
           </div>
-          <span className="w-14 shrink-0 text-right text-xs font-bold tabular-nums text-slate-500">
+          <span className="w-14 shrink-0 text-right font-mono text-xs font-bold tabular-nums text-ink/55">
             {t.survivalMonths ?? "-"}개월
           </span>
         </div>
@@ -259,11 +255,11 @@ export default function Unit() {
   if (q.isLoading) {
     return (
       <div className="min-h-dvh bg-paper">
-        <div className="h-52 bg-navy" />
-        <div className="mx-auto -mt-16 max-w-4xl space-y-4 px-5">
-          <Skeleton className="h-24 w-full rounded-2xl" />
-          <Skeleton className="h-44 w-full rounded-2xl" />
-          <Skeleton className="h-44 w-full rounded-2xl" />
+        <div className="mx-auto max-w-4xl space-y-4 px-5 pt-8">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-44 w-full" />
+          <Skeleton className="h-44 w-full" />
         </div>
       </div>
     );
@@ -279,7 +275,7 @@ export default function Unit() {
             onRetry={notFound ? undefined : () => q.refetch()}
           />
           <div className="pb-4 text-center">
-            <Link to="/" className="text-sm font-semibold text-accent hover:underline">
+            <Link to="/" className="text-sm font-semibold text-stamp-navy hover:underline">
               검색으로 돌아가기
             </Link>
           </div>
@@ -296,65 +292,64 @@ export default function Unit() {
   const sel = timeline[selected];
   const extras = mockExtras(selected);
   const maxMonths = Math.max(...timeline.map((t) => t.survivalMonths ?? 0), 1);
+  const sujeongDong = unit.jibunAddress.match(/수정구\s+(\S+동)/)?.[1] ?? "";
 
   return (
     <div className="min-h-dvh bg-paper">
-      {/* 네이비 히어로 */}
-      <div className="relative overflow-hidden bg-navy pb-24 pt-4 text-white">
-        <div
-          aria-hidden
-          className="grid-bg-dark pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]"
-        />
-        <div className="relative mx-auto w-full max-w-4xl px-5">
-          <div className="flex items-center justify-between">
-            <Brand dark />
-            <Link
-              to={mapLink}
-              className="rounded-full border border-white/20 px-4 py-1.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
-            >
-              ← 지도로
-            </Link>
-          </div>
-          <div className="fade-up mt-8">
-            <p className="text-sm text-white/60">
-              {unit.jibunAddress} · {unit.roadAddress}
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-                {unit.label}
-              </h1>
-              <span className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-sm font-semibold backdrop-blur">
-                <span
-                  className={`h-2 w-2 rounded-full ${isOpen ? "bg-mint" : "bg-slate-400"}`}
-                />
-                {isOpen ? `지금은 ${last.businessName} 영업 중` : "지금은 비어 있어요"}
-              </span>
-            </div>
-          </div>
+      <div className="mx-auto w-full max-w-4xl px-5 pt-4">
+        <div className="flex items-center justify-between pb-4">
+          <Brand />
+          <Link
+            to={mapLink}
+            className="border border-ink/20 px-4 py-1.5 font-mono text-xs text-ink/60 transition hover:border-ink hover:text-ink"
+          >
+            ← 지도로
+          </Link>
         </div>
+
+        <DocHeader no={docNo(unit.unitId)} date={disclaimer.dataAsOf} />
       </div>
 
-      <main className="mx-auto -mt-16 w-full max-w-4xl space-y-4 px-5 pb-16">
-        {/* 통계 */}
-        <div className="fade-up grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="거쳐간 가게" value={statistics.totalTenancyCount} suffix="곳" />
-          <Stat label="폐업" value={statistics.closedCount} suffix="번" accent="flame" />
-          <Stat
-            label="평균 영업 기간"
-            value={statistics.averageSurvivalMonths}
-            suffix="개월"
-            accent="blue"
-          />
-          <Stat
-            label="가장 길게 / 짧게"
-            value={
-              statistics.longestSurvivalMonths != null
-                ? `${statistics.longestSurvivalMonths} / ${statistics.shortestSurvivalMonths}`
-                : null
-            }
-            suffix="개월"
-          />
-        </div>
+      <main className="mx-auto w-full max-w-4xl space-y-8 px-5 py-8">
+        {/* 표제부 — 물건의 표시 */}
+        <LedgerSection mark="【표제부】" title="물건의 표시">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="fade-up min-w-0">
+              <p className="font-mono text-xs text-ink/45">
+                {unit.jibunAddress} · {unit.roadAddress}
+              </p>
+              <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+                {unit.label}
+              </h1>
+              <p className="mt-2 text-sm text-ink/60">
+                {isOpen ? `지금은 ${last.businessName} 영업 중` : "지금은 비어 있어요"}
+              </p>
+            </div>
+            {isOpen && (
+              <Seal center="영업" ring={sujeongDong ? `성남시 ${sujeongDong}` : "성남시 수정구"} />
+            )}
+          </div>
+
+          <div className="fade-up mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <Stat label="거쳐간 가게" value={statistics.totalTenancyCount} suffix="곳" />
+            <Stat label="폐업" value={statistics.closedCount} suffix="번" accent="flame" />
+            <Stat
+              label="평균 영업 기간"
+              value={statistics.averageSurvivalMonths}
+              suffix="개월"
+              accent="blue"
+            />
+            <Stat
+              label="가장 길게 / 짧게"
+              value={
+                statistics.longestSurvivalMonths != null
+                  ? `${statistics.longestSurvivalMonths} / ${statistics.shortestSurvivalMonths}`
+                  : null
+              }
+              suffix="개월"
+            />
+          </div>
+        </LedgerSection>
 
         {timeline.length === 0 ? (
           <Card className="p-6">
@@ -362,64 +357,72 @@ export default function Unit() {
           </Card>
         ) : (
           <>
-            {/* 운영기간 라인 */}
-            <Card className="fade-up p-5 sm:p-6">
-              <div className="flex items-baseline justify-between">
-                <h2 className="text-lg font-extrabold text-ink">운영 타임라인</h2>
-                <span className="text-sm text-slate-400">
-                  {ym(timeline[0].licensedAt)} – {isOpen ? "현재" : ym(last.closedAt ?? TODAY)}
-                </span>
-              </div>
-
-              <div className="mt-4">
-                <TimelineBar
-                  timeline={timeline}
-                  colors={colors}
-                  selected={selected}
-                  onSelect={setSelected}
-                />
-              </div>
+            {/* 갑구 — 등재 순위에 따른 운영 이력 */}
+            <LedgerSection
+              mark="【갑구】"
+              title="운영 이력"
+              aside={`${ym(timeline[0].licensedAt)} – ${isOpen ? "현재" : ym(last.closedAt ?? TODAY)}`}
+            >
+              <TimelineBar
+                timeline={timeline}
+                colors={colors}
+                selected={selected}
+                onSelect={setSelected}
+              />
 
               {/* 범례 — 업종 종류 */}
               <div className="mt-4 flex flex-wrap gap-2">
                 {Object.entries(colors).map(([cat, color]) => (
                   <span
                     key={cat}
-                    className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-600 shadow-[0_1px_5px_rgba(13,27,42,0.13)]"
+                    className="flex items-center gap-2 border border-ledger bg-white/50 px-3 py-1 text-sm text-ink/60"
                   >
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+                    <span className="h-2.5 w-2.5" style={{ backgroundColor: color }} />
                     {cat}
                   </span>
                 ))}
               </div>
-            </Card>
 
-            {/* 가게 상세 정보 — 막대·기록·드롭다운 어디서 선택해도 여기로 반영 */}
-            <Card className="fade-up p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-extrabold text-ink">가게 자세히 보기</h2>
-                <select
-                  value={selected}
-                  onChange={(e) => setSelected(Number(e.target.value))}
-                  aria-label="가게 선택"
-                  className="rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold text-ink focus:border-accent focus:outline-none"
-                >
-                  {timeline.map((t, i) => (
-                    <option key={i} value={i}>
-                      {t.businessName} · {period(t)}
-                    </option>
+              <ol className="mt-6">
+                {timeline
+                  .map((t, i) => ({ t, i }))
+                  .reverse()
+                  .map(({ t, i }, order, arr) => (
+                    <RecordRow
+                      key={i}
+                      t={t}
+                      rank={timeline.length - order}
+                      color={colors[t.category]}
+                      maxMonths={maxMonths}
+                      isLast={order === arr.length - 1}
+                      selected={i === selected}
+                      onSelect={() => setSelected(i)}
+                    />
                   ))}
-                </select>
-              </div>
+              </ol>
+            </LedgerSection>
 
-              {/* key로 선택 변경 시 페이드 재생 */}
-              <div key={selected} className="fade-up mt-4 grid gap-3 sm:grid-cols-2">
-                {/* 인허가 정보 */}
-                <section className="rounded-xl border border-line bg-slate-50 p-4">
-                  <h3 className="text-xs font-bold tracking-wide text-slate-400">
+            {/* 을구 — 선택한 등재사항의 부가 정보 */}
+            <LedgerSection mark="【을구】" title="부가 정보" aside="선택한 등재사항 기준">
+              <select
+                value={selected}
+                onChange={(e) => setSelected(Number(e.target.value))}
+                aria-label="가게 선택"
+                className="mb-4 border border-ledger bg-white/60 px-3 py-2 font-mono text-sm text-ink focus:border-ink focus:outline-none"
+              >
+                {timeline.map((t, i) => (
+                  <option key={i} value={i}>
+                    {timeline.length - i}순위 · {t.businessName} · {period(t)}
+                  </option>
+                ))}
+              </select>
+
+              <div key={selected} className="fade-up grid gap-3 sm:grid-cols-2">
+                <section className="border border-ledger bg-white/40 p-4">
+                  <h3 className="font-mono text-xs font-bold tracking-wide text-ink/45">
                     인허가 정보
                   </h3>
-                  <dl className="mt-3 space-y-2">
+                  <dl className="mt-2">
                     <InfoRow k="상호명" v={sel.businessName} />
                     <InfoRow k="업종" v={sel.category} />
                     <InfoRow k="개업일자" v={sel.licensedAt} />
@@ -441,13 +444,12 @@ export default function Unit() {
                   </dl>
                 </section>
 
-                {/* 계약·주변상권 (예시) */}
-                <section className="rounded-xl border border-dashed border-line bg-white p-4">
-                  <h3 className="flex items-center gap-2 text-xs font-bold tracking-wide text-slate-400">
+                <section className="border border-dashed border-ledger bg-white/20 p-4">
+                  <h3 className="flex items-center gap-2 font-mono text-xs font-bold tracking-wide text-ink/45">
                     계약·주변상권 정보
                     <StatusBadge label="예시" />
                   </h3>
-                  <dl className="mt-3 space-y-2">
+                  <dl className="mt-2">
                     <InfoRow k="전용면적" v={extras.area} />
                     <InfoRow k="보증금 / 월세" v={`${extras.deposit} / ${extras.rent} 원`} />
                     <InfoRow k="권리금" v={extras.premium} />
@@ -455,41 +457,18 @@ export default function Unit() {
                     <InfoRow k={`주변 같은 업종(${sel.category})`} v={`${extras.peers}곳`} />
                     <InfoRow k="주변 공실률" v={extras.vacancy} />
                   </dl>
-                  <p className="mt-3 text-[11px] text-slate-400">
+                  <p className="mt-3 font-mono text-[11px] text-ink/35">
                     실 데이터 연동 전 예시값입니다.
                   </p>
                 </section>
               </div>
-            </Card>
-
-            {/* 세부 입점 기록 */}
-            <Card className="fade-up p-5 sm:p-6">
-              <div className="flex items-baseline justify-between">
-                <h2 className="text-lg font-extrabold text-ink">입점 기록</h2>
-                <span className="text-sm text-slate-400">최근 가게부터 · 막대 길이는 영업 기간</span>
-              </div>
-              <ol className="mt-4">
-                {timeline
-                  .map((t, i) => ({ t, i }))
-                  .reverse()
-                  .map(({ t, i }, order, arr) => (
-                    <RecordRow
-                      key={i}
-                      t={t}
-                      color={colors[t.category]}
-                      maxMonths={maxMonths}
-                      isLast={order === arr.length - 1}
-                      selected={i === selected}
-                      onSelect={() => setSelected(i)}
-                    />
-                  ))}
-              </ol>
-              <div className="mt-3 border-t border-line pt-3">
-                <Disclaimer disclaimer={disclaimer} />
-              </div>
-            </Card>
+            </LedgerSection>
           </>
         )}
+
+        <div className="border-t border-ledger pt-3">
+          <Disclaimer disclaimer={disclaimer} />
+        </div>
       </main>
     </div>
   );
