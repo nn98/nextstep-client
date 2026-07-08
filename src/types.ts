@@ -79,20 +79,6 @@ export interface Tenancy {
   enrichmentSource: EnrichmentSource;
   marketInfo: MarketInfo;
 }
-// 주변상권 분석 데이터셋(예정 스펙) — 있으면 사용, 없으면 해당 영역만 안내문으로 대체
-export interface CategoryCount {
-  category: string;
-  count: number;
-}
-export interface Neighborhood {
-  totalStoreCount: number;
-  sameCategoryCount: number;
-  categoryBreakdown: CategoryCount[];
-  recentOpenCount: number;
-  radiusMeters: number;
-  snapshotAt: string;
-}
-
 export interface UnitDetail {
   unit: {
     unitId: string;
@@ -102,7 +88,6 @@ export interface UnitDetail {
   };
   statistics: Statistics;
   timeline: Tenancy[];
-  neighborhood?: Neighborhood;
   disclaimer: Disclaimer;
 }
 

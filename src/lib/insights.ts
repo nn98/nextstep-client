@@ -1,6 +1,7 @@
-// 상세 페이지의 진단/위험도/신호/체크리스트 — 전부 statistics·timeline(그리고 있으면 neighborhood)에서
-// 파생 계산. 규칙이 하나로 정해져 있는 값이 아니라 첫 버전 휴리스틱이므로, 실제 서비스화 시
-// 폐업 데이터가 쌓이면 임계값(closedCount 구간 등)을 다시 튜닝해야 한다.
+// 상세 페이지의 진단/위험도/신호/체크리스트 — 전부 statistics·timeline(그리고 있으면
+// marketInfo.sameCategoryNearbyCount)에서 파생 계산. 규칙이 하나로 정해져 있는 값이 아니라
+// 첫 버전 휴리스틱이므로, 실제 서비스화 시 폐업 데이터가 쌓이면 임계값(closedCount 구간 등)을
+// 다시 튜닝해야 한다.
 import type { Statistics, Tenancy } from "../types";
 import { DAY, monthsBetween } from "./timeline.ts";
 
