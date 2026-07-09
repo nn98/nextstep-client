@@ -206,6 +206,10 @@ for (const r of sujeong) {
     closedAtEstimated,
     x: r["좌표정보(X)"],
     y: r["좌표정보(Y)"],
+    dongCode,
+    mountain: parsed.mountain,
+    bonbun: parsed.bonbun,
+    bubun: parsed.bubun,
   });
 }
 
@@ -289,6 +293,52 @@ function survivalStats(records) {
   };
 }
 
+// ---- 4.5) 좌표 없는 자리, SDSC2(소상공인시장진흥공단 상가업소정보) API로 임시 보강 ----
+// ponytail: 서버가 상권/개폐업 정보를 묶어 내려줄 때까지의 임시 조치. 지번(법정동+본번/부번)
+// 매칭이라 상호명 변동엔 영향 없음. 실 서비스 전환 시 서버 쪽 통합 데이터로 대체.
+// 키는 SDSC_SERVICE_KEY 환경변수로만 받는다 — 코드/커밋에 남기지 않는다.
+const SDSC_SIGNGU_CD = "41131"; // 성남시 수정구
+const sdscKey = ({ dongCode, mountain, bonbun, bubun }) =>
+  `${dongCode}|${mountain ? "1" : "0"}|${bonbun.padStart(4, "0")}|${(bubun ?? "0").padStart(4, "0")}`;
+
+async function fetchSdscCoordIndex(serviceKey) {
+  const index = new Map();
+  for (let pageNo = 1; ; pageNo++) {
+    const url = new URL("http://apis.data.go.kr/B553077/api/open/sdsc2/storeListInDong");
+    url.searchParams.set("divId", "signguCd");
+    url.searchParams.set("key", SDSC_SIGNGU_CD);
+    url.searchParams.set("numOfRows", "1000");
+    url.searchParams.set("pageNo", String(pageNo));
+    url.searchParams.set("type", "json");
+    url.searchParams.set("ServiceKey", serviceKey);
+    const res = await fetch(url);
+    const body = await res.json();
+    if (body.header?.resultCode !== "00") {
+      throw new Error(`SDSC2 API error: ${body.header?.resultCode} ${body.header?.resultMsg}`);
+    }
+    const items = body.body?.items ?? [];
+    for (const it of items) {
+      const key = `${it.ldongCd}|${it.plotSctCd === "2" ? "1" : "0"}|${String(it.lnoMnno ?? "").padStart(
+        4,
+        "0"
+      )}|${String(it.lnoSlno || "0").padStart(4, "0")}`;
+      if (!index.has(key)) index.set(key, { lat: it.lat, lon: it.lon });
+    }
+    if (items.length < 1000) break;
+  }
+  return index;
+}
+
+const missingCoordPnus = [...sites].filter(([, records]) => !records.some((r) => r.x && r.y)).map(([pnu]) => pnu);
+let sdscIndex = null;
+if (missingCoordPnus.length) {
+  if (process.env.SDSC_SERVICE_KEY) {
+    sdscIndex = await fetchSdscCoordIndex(process.env.SDSC_SERVICE_KEY);
+  } else {
+    console.warn(`SDSC_SERVICE_KEY 미설정 — 좌표 없는 ${missingCoordPnus.length}개 자리 보강 생략`);
+  }
+}
+
 // ---- 5) Assemble output rows ----
 const siteRows = [];
 const unitRows = [];
@@ -297,10 +347,20 @@ const unitStatRows = [];
 const siteStatRows = [];
 let tenancyId = 1;
 let missingCoordSites = 0;
+let sdscEnrichedSites = 0;
 
 for (const [pnu, records] of sites) {
   const withCoord = records.find((r) => r.x && r.y);
-  const coord = withCoord ? toWgs84(withCoord.x, withCoord.y) : null;
+  let coord = withCoord ? toWgs84(withCoord.x, withCoord.y) : null;
+  let geocoded = false;
+  if (!coord && sdscIndex) {
+    const hit = sdscIndex.get(sdscKey(records[0]));
+    if (hit) {
+      coord = { lat: hit.lat, lon: hit.lon };
+      geocoded = true;
+      sdscEnrichedSites++;
+    }
+  }
   if (!coord) missingCoordSites++;
 
   // ponytail: 대표 도로명주소 = 그룹 내 최단 문자열(상세주소 접미사 없을 가능성 높음)
@@ -316,7 +376,7 @@ for (const [pnu, records] of sites) {
     roadAddress,
     latitude: coord?.lat ?? null,
     longitude: coord?.lon ?? null,
-    geocoded: false,
+    geocoded,
   });
 
   const units = splitUnits(records);
@@ -439,7 +499,10 @@ const summary = {
   unitCount: unitRows.length,
   tenancyCount: tenancyRows.length,
   sitesMissingCoordinates: missingCoordSites,
-  note: "geocoded는 전부 false — VWorld API 키 없어 좌표 보강 미실행(원본 X/Y만 변환). 좌표 없는 자리는 지도 마커 제외 대상.",
+  sitesEnrichedViaSdsc: sdscEnrichedSites,
+  note: sdscIndex
+    ? "geocoded=true는 SDSC2(소상공인시장진흥공단 상가업소정보) API 임시 보강분. 원본 CSV에 X/Y 있는 자리는 geocoded=false(직접 변환). 그래도 좌표 없는 자리는 지도 마커 제외 대상."
+    : "SDSC_SERVICE_KEY 미설정으로 좌표 보강 생략 — 원본 X/Y만 변환. 좌표 없는 자리는 지도 마커 제외 대상.",
 };
 writeFileSync(path.join(OUT_DIR, "summary.json"), JSON.stringify(summary, null, 2), "utf8");
 

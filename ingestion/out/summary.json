@@ -1,5 +1,5 @@
 {
-  "dataAsOf": "2026-07-08",
+  "dataAsOf": "2026-07-09",
   "totalRowsInFile": 9522,
   "sujeongGuRows": 2709,
   "excludedRows": 0,
@@ -7,6 +7,7 @@
   "siteCount": 1192,
   "unitCount": 2591,
   "tenancyCount": 2709,
-  "sitesMissingCoordinates": 29,
-  "note": "geocoded는 전부 false — VWorld API 키 없어 좌표 보강 미실행(원본 X/Y만 변환). 좌표 없는 자리는 지도 마커 제외 대상."
+  "sitesMissingCoordinates": 10,
+  "sitesEnrichedViaSdsc": 19,
+  "note": "geocoded=true는 SDSC2(소상공인시장진흥공단 상가업소정보) API 임시 보강분. 원본 CSV에 X/Y 있는 자리는 geocoded=false(직접 변환). 그래도 좌표 없는 자리는 지도 마커 제외 대상."
 }
